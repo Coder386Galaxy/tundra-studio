@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tundra Studio — AI Game Forge for Tundra Games</title>
+<meta name="description" content="Tundra Studio helps you make games using AI and publish them to Tundra Games. The only AI is your API key; the code is yours to edit normally.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234FB3E8'/%3E%3Cstop offset='1' stop-color='%237A8B94'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%231B1F23'/%3E%3Cpath d='M32 10v44M13 21l38 22M13 43l38-22' stroke='url(%23g)' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23F5FAFF'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/studio.css">
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <a class="brand" href="#" onclick="TS.go('home');return false">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FB3E8"/><stop offset="1" stop-color="#7A8B94"/></linearGradient></defs>
+      <rect width="64" height="64" rx="14" fill="#1B1F23" stroke="rgba(79,179,232,.35)" stroke-width="2"/>
+      <path d="M32 10v44M13 21l38 22M13 43l38-22" stroke="url(#lg)" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="32" cy="32" r="6" fill="#F5FAFF"/>
+    </svg>
+    <div class="wordmark">TUNDRA <span>STUDIO</span><small>AI game forge</small></div>
+  </a>
+  <nav class="nav">
+    <button class="nav-btn on" data-view="home"     onclick="TS.go('home')">Forge</button>
+    <button class="nav-btn"    data-view="code"     onclick="TS.openCode()">Code Room</button>
+    <button class="nav-btn"    data-view="publish"  onclick="TS.go('publish')">Publish</button>
+    <button class="nav-btn"    data-view="projects" onclick="TS.go('projects')">Projects</button>
+    <button class="nav-btn"    data-view="guide"    onclick="TS.go('guide')">Guide</button>
+  </nav>
+  <div class="top-right">
+    <button class="btn ghost sm" id="engineBtn" onclick="TS.openSettings()" title="AI engine — API key">⚙ Engine</button>
+    <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HOME / FORGE LANDING ============ -->
+  <section class="view on" id="view-home">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="kicker">◆ Companion forge for Tundra Publishing</div>
+        <h1>Make games with <em>AI</em>.<br>Ship them to <em>Tundra&nbsp;Games</em>.</h1>
+        <p class="lede">Connect any AI model with <b>your API key</b> — it writes the game code, you edit it
+          like any normal HTML/JS project, then publish a store-ready title to
+          <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra&nbsp;Games</a>.
+          Or skip AI entirely and code the whole thing yourself.</p>
+        <div class="prompt-card">
+          <textarea id="heroPrompt" rows="3" placeholder="e.g. “A cozy flappy game where a little glacier spirit flies through ice caves, easy and chill with a blue palette”…"></textarea>
+          <div class="lang-row"><span class="lang-lbl">Code in</span><div class="chips" id="langChips"></div></div>
+          <div class="prompt-row">
+            <div class="chips" id="ideaChips"></div>
+            <div class="prompt-actions">
+              <button class="btn ghost" onclick="TS.surprise()">💡 Idea</button>
+              <button class="btn ghost" onclick="TS.startTemplate('starter')">▶ Starter template</button>
+              <button class="btn ghost" onclick="TS.startTemplate('empty')">▢ Empty file</button>
+              <button class="btn primary big" id="heroGo" onclick="TS.aiGenerate(true)">⚡ Generate with AI</button>
+            </div>
+          </div>
+          <div class="door-sep"><span>— or skip AI entirely —</span></div>
+          <div class="door-row">
+            <button class="btn ghost" onclick="TS.openCode()">⌨️ Code by hand in the Code Room</button>
+            <button class="btn ghost" id="heroAI2" style="display:none" onclick="TS.openAI()">🤖 Open AI assistant</button>
+            <span class="fine" style="margin:0">The Code Room has no AI anywhere — just you and the code.</span>
+          </div>
+          <div class="fine" id="heroEngineLine" style="margin-top:10px"></div>
+        </div>
+        <div class="hero-stats">
+          <div><b>1 file</b><span>per game — plain HTML/JS</span></div>
+          <div><b>Your key</b><span>the only AI — any model</span></div>
+          <div><b>1 click</b><span>store-ready publish package</span></div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="aurora"></div>
+        <svg class="crystal" viewBox="0 0 200 200">
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FB3E8"/><stop offset=".55" stop-color="#F5FAFF"/><stop offset="1" stop-color="#7A8B94"/></linearGradient></defs>
+          <g stroke="url(#cg)" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M100 12v176M22 56l156 88M22 144l156-88"/>
+            <path d="M100 40l-16 14m16-14l16 14M100 160l-16-14m16 14l16-14"/>
+            <path d="M52 72l-4 21m4-21l21 4M148 128l4-21m-4 21l-21-4"/>
+            <path d="M52 128l-4-21m4 21l21-4M148 72l4 21m-4-21l-21 4"/>
+          </g>
+          <circle cx="100" cy="100" r="13" fill="#F5FAFF"/>
+          <circle cx="100" cy="100" r="22" fill="none" stroke="#4FB3E8" stroke-width="2" opacity=".7"/>
+        </svg>
+        <div class="badge-float b1">index.html — just code</div>
+        <div class="badge-float b2">⚙ API key → any model</div>
+        <div class="badge-float b3">publish.json ✓</div>
+      </div>
+    </div>
+
+    <div class="how-strip">
+      <div class="step"><i>1</i><b>Connect</b><span>Add your API key (OpenAI, or any compatible endpoint). That's the only AI here.</span></div>
+      <div class="step"><i>2</i><b>Generate or code</b><span>Describe a game and let the model write it — or start from a template and type.</span></div>
+      <div class="step"><i>3</i><b>Edit normally</b><span>Real code editor: plain HTML/JS, live preview, no hidden pipeline.</span></div>
+      <div class="step"><i>4</i><b>Publish</b><span>Export a publish package and drop it into Tundra Games.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ WORKSHOP ============ -->
+  <section class="view" id="view-workshop">
+    <div class="workshop" id="workshopEmpty" style="display:none"></div>
+    <div class="workshop" id="workshopGrid">
+      <aside class="panel col-left" id="aiCol">
+        <div class="dock-head">
+          <h3 style="margin:0">AI assistant <span class="tag">API key</span></h3>
+          <button class="dock-x" onclick="TS.closeAI()" title="Close the AI assistant and code by hand">✕ close</button>
+        </div>
+        <textarea id="aiPrompt" rows="3" placeholder="Describe a game to generate — or a change to apply to the current code…"></textarea>
+        <div class="row gap" style="margin-top:8px">
+          <button class="btn primary sm" id="aiGoBtn" onclick="TS.aiGenerate()">⚡ Generate game</button>
+          <button class="btn ghost sm" id="aiModBtn" onclick="TS.aiModify()">→ Apply to code</button>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <button class="chip" onclick="TS.quickFix('Fix any bugs and crashes in this game')">🐛 Fix bugs</button>
+          <button class="chip" onclick="TS.quickFix('Add more juice: particles, screen shake, sound effects, polish')">✨ Juice</button>
+          <button class="chip" onclick="TS.quickFix('Make sure it plays great on mobile with touch controls')">📱 Touch</button>
+        </div>
+        <h3>Activity</h3>
+        <pre class="log" id="aiLog">The only AI here is your API key.
+Configure it under ⚙ Engine.</pre>
+        <div class="fine" id="engineLine"></div>
+        <h3>Project</h3>
+        <div class="row gap">
+          <button class="btn ghost sm" onclick="TS.saveProject()">💾 Save</button>
+          <button class="btn ghost sm" onclick="TS.downloadGame()">⬇ Code</button>
+          <button class="btn ghost sm" onclick="TS.newFrom('empty')">✚ New</button>
+        </div>
+        <p class="fine" id="langNote"></p>
+      </aside>
+
+      <section class="col-mid">
+        <div class="preview-bar">
+          <div class="preview-title" id="buildTitle">—<small id="dirtyFlag"></small><span class="tag noai-tag">no AI</span></div>
+          <div class="row gap">
+            <select id="langSel" class="langsel" onchange="TS.setLang(this.value)" title="Coding language">
+              <option value="js">JavaScript</option>
+              <option value="py">Python</option>
+              <option value="lua">Lua</option>
+            </select>
+            <span class="fileline" id="fileLabel">index.html</span>
+            <label class="autoline"><input type="checkbox" id="autoRun" onchange="TS.setAutoRun(this.checked)"> run on type</label>
+            <button class="btn primary sm" onclick="TS.run()" title="Ctrl+Enter">▶ Run</button>
+            <button class="btn ghost sm" onclick="TS.saveProject()" title="Ctrl+S">💾</button>
+            <button class="btn ghost sm" onclick="TS.downloadGame()">⬇</button>
+          </div>
+        </div>
+
+        <div class="editor" id="editor">
+          <pre class="ed-hl" id="edHl"><code></code></pre>
+          <div class="ed-gutter" id="edGutter">1</div>
+          <textarea id="codeArea" spellcheck="false" wrap="off" placeholder="&lt;!DOCTYPE html&gt; …"></textarea>
+        </div>
+
+        <div class="preview-head">
+          <b>Live preview</b>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureShot()">📸 Capture</button>
+            <button class="btn ghost sm" onclick="TS.captureAll()">✨ Auto media</button>
+          </div>
+        </div>
+        <div class="preview-frame" id="previewFrame">
+          <iframe id="gameFrame" title="Game preview" sandbox="allow-scripts allow-same-origin" src="about:blank"></iframe>
+        </div>
+        <div class="hint-bar" id="ctrlHint">Controls appear here.</div>
+      </section>
+
+      <aside class="panel col-right">
+        <div class="tabs" id="wsTabs">
+          <button class="tab on" data-tab="kit" onclick="TS.wsTab('kit')">Store Kit</button>
+          <button class="tab" data-tab="media" onclick="TS.wsTab('media')">Media</button>
+        </div>
+
+        <div class="tab-pane on" id="pane-kit">
+          <div class="form" id="kitForm"></div>
+          <div class="row gap">
+            <button class="btn primary sm" onclick="TS.go('publish')">Continue to Publish →</button>
+            <button class="btn ghost sm" onclick="TS.saveProject()">💾 Save project</button>
+          </div>
+          <p class="fine">Filled automatically from the game's <code>TUNDRA_META</code> comment when the AI (or you) include one.</p>
+        </div>
+
+        <div class="tab-pane" id="pane-media">
+          <label class="lbl">Cover art
+            <div class="media-box" id="coverBox"></div>
+          </label>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureCover()">From game</button>
+            <label class="btn ghost sm file-btn">Upload<input type="file" accept="image/*" hidden onchange="TS.uploadCover(this)"></label>
+          </div>
+          <label class="lbl" style="margin-top:14px">Screenshots <small id="shotCount"></small>
+            <div class="media-box shots" id="shotGrid"></div>
+          </label>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureShot()">📸 Capture</button>
+            <button class="btn ghost sm" onclick="TS.captureAll()">✨ Auto media</button>
+            <label class="btn ghost sm file-btn">Upload<input type="file" accept="image/*" multiple hidden onchange="TS.uploadShots(this)"></label>
+          </div>
+          <p class="fine">📸 grabs the live game canvas (works with any code). ✨ stages title/play/over shots when the game includes the studio bridge. Media is stored as data-URLs, exactly what the Tundra Games form expects.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ PUBLISH ============ -->
+  <section class="view" id="view-publish">
+    <div class="page-head">
+      <h2>Publish to Tundra Games</h2>
+      <p>Your build is packaged in the exact schema of the
+        <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+        catalog (<code>games · news · promos · users · reviews</code>). Pick any path below.</p>
+    </div>
+
+    <div class="publish-grid">
+      <div class="panel pub-card direct-card">
+        <div class="num">⚡</div>
+        <h3>Publish directly to Tundra Games</h3>
+        <p>Tundra Studio and <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+          share the same site (<code>coder386galaxy.github.io</code>), so the studio can write your title
+          <b>straight into the store's catalog on this device</b>. Open the store and it's on the shelf — no files.</p>
+        <div id="directStatus" class="fine"></div>
+        <div class="row gap">
+          <button class="btn primary" id="directBtn" onclick="TS.directPublish()">⚡ Publish directly</button>
+          <a class="btn ghost" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Tundra Games ↗</a>
+          <button class="btn ghost sm" onclick="TS.directRefresh()">↻ Status</button>
+        </div>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">A</div>
+        <h3>Export publish package</h3>
+        <p>Downloads <code>tundra-publish-…json</code> containing your title (plus a launch news post) in the
+          store's Restore format.</p>
+        <button class="btn primary" onclick="TS.exportPackage()">⬇ Export publish package</button>
+        <p class="fine">On Tundra Games open <b>Publish → Data → Restore</b> and choose the file.
+          ⚠️ Restore replaces the whole catalog — if the store already has titles, use path&nbsp;B.</p>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">B</div>
+        <h3>Merge into existing catalog <span class="tag">recommended</span></h3>
+        <p>Drop the store's last <b>Publish → Data → Export JSON</b> backup here. Tundra Studio weaves your new
+          title into it without touching anything else — then Restore the merged file.</p>
+        <label class="dropzone" id="dropCatalog">
+          <input type="file" accept="application/json" hidden onchange="TS.loadCatalog(this)">
+          <span>Drop catalog JSON or click to browse</span>
+        </label>
+        <div id="mergeStatus" class="fine"></div>
+        <button class="btn primary" id="mergeExportBtn" style="display:none" onclick="TS.exportMerged()">⬇ Export merged catalog</button>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">C</div>
+        <h3>Manual New-Title form</h3>
+        <p>Rather type it in? Copy each field straight into the store's <b>Publish → New Title</b> form.</p>
+        <div id="copyList" class="copy-list"></div>
+        <div class="row gap">
+          <button class="btn ghost sm" onclick="TS.downloadMediaFiles()">⬇ cover + shots</button>
+          <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Publish tab ↗</a>
+        </div>
+      </div>
+
+      <div class="panel pub-card wide">
+        <h3>Storefront preview</h3>
+        <p class="fine">Exactly how your listing renders inside Tundra Games (same palette, card &amp; detail layout).</p>
+        <div class="store-preview" id="storePreview"></div>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">D</div>
+        <h3>Game build file</h3>
+        <p>The playable game itself as a single HTML file (also embedded in the package as <code>gameHTML</code>).</p>
+        <button class="btn ghost" onclick="TS.downloadGame()">⬇ game.html</button>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">E</div>
+        <h3>After publishing</h3>
+        <ul class="ticks">
+          <li>Launch news post is bundled in the package</li>
+          <li>Share link: store URL + <code>#game=&lt;id&gt;</code></li>
+          <li>Players buy/claim it, review it, and track play sessions</li>
+        </ul>
+        <a class="btn primary" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Go to Tundra Games ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="view" id="view-projects">
+    <div class="page-head">
+      <h2>Projects</h2>
+      <p>Everything you've built in this browser. Saved automatically.</p>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </section>
+
+  <!-- ============ GUIDE ============ -->
+  <section class="view" id="view-guide">
+    <div class="page-head"><h2>How Tundra Studio works</h2></div>
+    <div class="guide-grid">
+      <div class="panel">
+        <h3>🔑 The only AI is your API key</h3>
+        <p>Tundra Studio has <b>no built-in AI</b>. You bring a key (OpenAI or any OpenAI-compatible endpoint —
+          local LLMs included), pick a model, and prompts go straight from your browser to your endpoint.
+          No middleman, no studio account. Without a key the studio still works — you just code by hand.</p>
+        <p><b>⚡ Generate</b> writes a whole game from your description. <b>→ Apply to code</b> revises the
+          current file from an instruction ("add touch controls", "fix the collision bug"…).</p>
+      </div>
+      <div class="panel">
+        <h3>⌨️ The Code Room — no AI</h3>
+        <p>The <b>Code Room</b> is a workspace with zero AI in it: no prompts, no assistant, nothing
+          calling out to a model. Pick your language — <b>JavaScript</b> (complete HTML document),
+          <b>Python</b> (via Pyodide) or <b>Lua</b> (via Fengari) — and just write.</p>
+        <p>Real editor: syntax highlighting per language, line numbers, tab/indent, Ctrl+Enter to run,
+          Ctrl+S to save. Python and Lua use a small <code>Tundra</code> game API (draw, input, score, juice)
+          and run in the browser — the publish build wraps them automatically.</p>
+        <p>Hand-written <b>Starter game</b> and <b>Empty file</b> templates exist for every language — zero AI involved.
+          Want a model's help later? The Forge page can open an AI assistant on your file — never the other way around.</p>
+      </div>
+      <div class="panel">
+        <h3>🏪 Publishing to Tundra Games</h3>
+        <p>Tundra Games stores its catalog in browser localStorage and moves it with
+          <b>Publish → Data → Export/Restore JSON</b>. Tundra Studio emits that exact schema:</p>
+        <pre class="code-mini">{
+  "games":  [{ id, title, studio, price, date, age,
+               tags, platforms, featured, blurb, desc,
+               image, screens, palette, discount, gameHTML }],
+  "news":   [{ date, title, body, game }],
+  "promos": {}, "users": …, "reviews": …
+}</pre>
+        <p>So a publish is one Restore away. The extra <code>gameHTML</code> field rides along with the catalog
+          (the store ignores fields it doesn't know), keeping the playable build attached to its listing.</p>
+      </div>
+      <div class="panel">
+        <h3>🔐 Everything stays yours</h3>
+        <p>Projects, media and settings live in your browser; games live as files you download.
+          Your prompt never leaves the machine except to the AI endpoint <b>you</b> configured.</p>
+        <p>The optional <code>TUNDRA_META</code> comment at the top of your file just pre-fills the store
+          kit — delete it whenever, it never affects the game.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>TUNDRA <span>STUDIO</span> · the AI game forge for Tundra Publishing</div>
+  <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+</footer>
+
+<!-- settings modal: the only AI = your API key -->
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="TS.closeSettings()">✕</button>
+    <h3>AI engine — your API key</h3>
+    <label class="lbl">Base URL<input class="inp" id="llmBase" placeholder="https://api.openai.com/v1"></label>
+    <label class="lbl">API key<input class="inp" id="llmKey" type="password" placeholder="sk-…"></label>
+    <label class="lbl">Model<input class="inp" id="llmModel" placeholder="gpt-4o-mini"></label>
+    <div class="row gap" style="margin-top:12px">
+      <button class="btn primary sm" onclick="TS.saveSettings()">Save</button>
+      <button class="btn ghost sm" onclick="TS.testEngine()">Test connection</button>
+      <button class="btn ghost sm" onclick="TS.closeSettings()">Close</button>
+    </div>
+    <p class="fine">Requests go straight from your browser to your endpoint — that's the only AI in Tundra Studio.
+      The key is kept in this browser only. Without a key you can still code by hand and publish.</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/llm.js"></script>
+<script src="js/runner.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/storekit.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

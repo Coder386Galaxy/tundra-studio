@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tundra Studio — AI Game Forge for Tundra Games</title>
+<meta name="description" content="Tundra Studio helps you make games using AI and publish them to Tundra Games. The only AI is your API key; the code is yours to edit normally.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234FB3E8'/%3E%3Cstop offset='1' stop-color='%237A8B94'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%231B1F23'/%3E%3Cpath d='M32 10v44M13 21l38 22M13 43l38-22' stroke='url(%23g)' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23F5FAFF'/%3E%3C/svg%3E">
+<style>
+/* ============ TUNDRA STUDIO ============ */
+:root{
+  --arctic:#4FB3E8;          /* Arctic Blue   */
+  --frost:#7A8B94;           /* Permafrost Grey */
+  --snow:#F5FAFF;            /* Snowflake White */
+  --char:#1B1F23;            /* Charcoal Black */
+  --char-2:#15181c;
+  --char-3:#242a30;
+  --line:rgba(122,139,148,.22);
+  --line-2:rgba(79,179,232,.28);
+  --good:#4c9a2a;
+  --bad:#ff8a8a;
+  --radius:14px;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,Ubuntu,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(79,179,232,.14), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(122,139,148,.12), transparent 55%),
+    linear-gradient(180deg,var(--char) 0%,var(--char-2) 100%);
+  color:var(--snow);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
+a{color:var(--arctic);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:.92em;background:rgba(79,179,232,.12);color:#9fd6f5;padding:1px 6px;border-radius:5px}
+pre{font-family:ui-monospace,Consolas,Menlo,monospace}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:18px;
+  padding:10px 22px;
+  background:rgba(21,24,28,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.logo{width:42px;height:42px;display:block}
+.wordmark{font-weight:800;letter-spacing:.14em;font-size:16px;line-height:1.05}
+.wordmark span{color:var(--arctic)}
+.wordmark small{display:block;letter-spacing:.08em;font-size:9.5px;color:var(--frost);font-weight:600;text-transform:uppercase}
+.nav{display:flex;gap:4px;margin-left:12px;flex-wrap:wrap}
+.nav-btn{
+  background:none;border:1px solid transparent;color:var(--frost);
+  font:600 13.5px var(--font);padding:8px 14px;border-radius:999px;cursor:pointer;transition:.18s;
+}
+.nav-btn:hover{color:var(--snow);background:rgba(79,179,232,.10)}
+.nav-btn.on{color:var(--snow);background:rgba(79,179,232,.16);border-color:var(--line-2)}
+.top-right{margin-left:auto;display:flex;gap:8px}
+
+/* ---------- buttons / inputs ---------- */
+.btn{
+  font:700 13.5px var(--font);padding:10px 18px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;transition:.18s;display:inline-flex;align-items:center;gap:7px;
+  text-decoration:none;
+}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#5dbdf0,#3898cf);color:#08222f;border-color:#6fc8f4;box-shadow:0 6px 18px rgba(79,179,232,.28)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:rgba(122,139,148,.12);color:var(--snow);border-color:var(--line)}
+.btn.ghost:hover{background:rgba(122,139,148,.22)}
+.btn.sm{padding:6px 12px;font-size:12.5px;border-radius:8px}
+.btn.big{padding:13px 26px;font-size:15.5px;border-radius:12px}
+.btn.block{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.inp,textarea,select{
+  width:100%;background:rgba(0,0,0,.35);color:var(--snow);
+  border:1px solid var(--line);border-radius:9px;padding:9px 11px;
+  font:400 13.5px var(--font);resize:vertical;
+}
+.inp:focus,textarea:focus,select:focus{outline:none;border-color:var(--arctic);box-shadow:0 0 0 3px rgba(79,179,232,.15)}
+.lbl{display:block;font-size:12px;font-weight:700;color:var(--frost);letter-spacing:.04em;text-transform:uppercase;margin:10px 0 4px}
+.lbl small{text-transform:none;font-weight:500;letter-spacing:0}
+.file-btn{cursor:pointer}
+.row{display:flex;align-items:center}
+.gap{gap:8px;flex-wrap:wrap}
+
+/* ---------- layout ---------- */
+main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 auto;padding:26px 22px 60px}
+.view{display:none;animation:fade .3s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page-head{margin:6px 0 22px}
+.page-head h2{font-size:30px;letter-spacing:.01em}
+.page-head p{color:#b7c4cc;margin-top:8px;max-width:820px;line-height:1.65;font-size:14.5px}
+.panel{
+  background:linear-gradient(180deg,rgba(36,42,48,.75),rgba(24,28,33,.85));
+  border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
+}
+.panel h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--arctic);margin:2px 0 12px}
+.panel h3 small{color:var(--frost);text-transform:none;letter-spacing:0;font-weight:500}
+.empty{color:var(--frost);text-align:center;padding:34px 12px;font-size:14.5px}
+.fine{color:var(--frost);font-size:12px;line-height:1.6;margin-top:8px}
+.tag{display:inline-block;background:rgba(79,179,232,.16);color:var(--arctic);border:1px solid var(--line-2);font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:2px 8px;border-radius:999px;text-transform:uppercase;vertical-align:middle}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;padding:30px 6px 10px}
+.kicker{color:var(--arctic);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:14px}
+.hero h1{font-size:clamp(34px,4.6vw,58px);line-height:1.04;letter-spacing:-.01em;font-weight:800}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--arctic),#9fd6f5 60%,var(--snow));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:18px 0 22px;color:#c3d0d8;font-size:16px;line-height:1.7;max-width:640px}
+.prompt-card{
+  background:rgba(15,18,22,.72);border:1px solid var(--line-2);border-radius:18px;padding:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(245,250,255,.05);
+}
+.prompt-card textarea{background:rgba(0,0,0,.35);border:1px solid var(--line);font-size:15px;line-height:1.55;min-height:86px}
+.prompt-row{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.prompt-actions{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  background:rgba(122,139,148,.12);border:1px solid var(--line);color:#cfdae1;
+  font:600 12px var(--font);padding:6px 12px;border-radius:999px;cursor:pointer;transition:.15s;
+}
+.chip:hover{border-color:var(--line-2);color:var(--snow)}
+.chip.on{background:rgba(79,179,232,.18);border-color:var(--arctic);color:var(--snow)}
+.hero-stats{display:flex;gap:34px;margin-top:26px;flex-wrap:wrap}
+.hero-stats b{display:block;font-size:22px;color:var(--snow)}
+.hero-stats span{color:var(--frost);font-size:12.5px}
+.hero-art{position:relative;height:420px;display:flex;align-items:center;justify-content:center}
+.aurora{
+  position:absolute;inset:8% 4%;border-radius:50%;
+  background:conic-gradient(from 210deg,#0b3d55,#4FB3E8,#7A8B94,#F5FAFF,#2a6f96,#0b3d55);
+  filter:blur(58px);opacity:.5;animation:spin 26s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.crystal{width:270px;height:270px;position:relative;filter:drop-shadow(0 0 34px rgba(79,179,232,.45));animation:floaty 7s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(-8px) rotate(-2deg)}50%{transform:translateY(10px) rotate(2deg)}}
+.badge-float{
+  position:absolute;background:rgba(15,18,22,.85);border:1px solid var(--line-2);color:#cfe8f7;
+  font:700 12px var(--font);padding:8px 14px;border-radius:999px;backdrop-filter:blur(6px);
+  box-shadow:0 10px 24px rgba(0,0,0,.4);
+}
+.badge-float.b1{top:12%;left:2%;animation:floaty 6s ease-in-out infinite}
+.badge-float.b2{bottom:18%;left:0;animation:floaty 8s ease-in-out .6s infinite}
+.badge-float.b3{top:38%;right:0;animation:floaty 7s ease-in-out .3s infinite}
+
+.how-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:36px}
+.step{background:rgba(36,42,48,.55);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.step i{
+  display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;
+  background:rgba(79,179,232,.18);color:var(--arctic);font-style:normal;font-weight:800;font-size:13.5px;margin-bottom:10px;
+}
+.step b{display:block;font-size:15.5px;margin-bottom:5px}
+.step span{color:#aebcc5;font-size:13px;line-height:1.55}
+
+/* ---------- workshop ---------- */
+.workshop{display:grid;grid-template-columns:300px 1fr 360px;gap:16px;align-items:start}
+.col-left,.col-right{max-height:calc(100vh - 130px);overflow-y:auto;position:sticky;top:76px}
+.col-left::-webkit-scrollbar,.col-right::-webkit-scrollbar{width:8px}
+.col-left::-webkit-scrollbar-thumb,.col-right::-webkit-scrollbar-thumb{background:rgba(122,139,148,.3);border-radius:8px}
+.log{
+  background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:9px;padding:10px;
+  font-size:11.5px;line-height:1.7;color:#8fd0b0;min-height:120px;white-space:pre-wrap;word-break:break-word;
+}
+.log .dim{color:var(--frost)}
+.log .hot{color:var(--arctic)}
+.form label{display:block;font-size:12px;font-weight:700;color:var(--frost);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.form label .inp,.form label textarea{margin-top:4px;text-transform:none;letter-spacing:0;font-weight:400}
+.form .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form .checks{display:flex;gap:12px;margin-top:6px;text-transform:none;letter-spacing:0;font-weight:500}
+.form .checks label{display:flex;align-items:center;gap:6px;margin:0;color:var(--snow);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0}
+.counter{float:right;font-weight:500;color:var(--frost);text-transform:none;letter-spacing:0}
+
+.preview-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.preview-title{font-weight:800;font-size:18px;letter-spacing:.02em}
+.preview-title small{color:var(--frost);font-weight:500;margin-left:8px;font-size:12px}
+.preview-frame{
+  position:relative;background:#0a0d10;border:1px solid var(--line-2);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow);aspect-ratio:16/9;
+}
+.preview-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0a0d10}
+.hint-bar{margin-top:10px;color:#a9b8c2;font-size:12.5px;letter-spacing:.02em}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 14px;padding:0 2px}
+.tab{
+  background:none;border:none;color:var(--frost);font:700 12.5px var(--font);padding:10px 12px;cursor:pointer;
+  border-bottom:2px solid transparent;letter-spacing:.04em;
+}
+.tab.on{color:var(--arctic);border-bottom-color:var(--arctic)}
+.tab-pane{display:none}
+.tab-pane.on{display:block}
+
+.media-box{border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.3);padding:8px;text-transform:none;letter-spacing:0;font-weight:400}
+.media-box img{width:100%;border-radius:7px;display:block;border:1px solid var(--line)}
+.media-box.shots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.media-box.shots .shot{position:relative}
+.media-box.shots .shot img{aspect-ratio:16/9;object-fit:cover}
+.shot .del{
+  position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);color:var(--bad);border:1px solid var(--line);
+  width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:11px;line-height:1;
+}
+
+/* ---------- publish ---------- */
+.publish-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pub-card{position:relative;display:flex;flex-direction:column;gap:10px}
+.pub-card.wide{grid-column:span 2}
+.pub-card.direct-card{grid-column:span 3;border-color:var(--line-2);background:linear-gradient(180deg,rgba(79,179,232,.10),rgba(24,28,33,.85))}
+.pub-card.direct-card .num{background:rgba(79,179,232,.25);font-size:14px}
+.pub-card .num{
+  position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:9px;
+  background:rgba(79,179,232,.15);border:1px solid var(--line-2);color:var(--arctic);
+  display:flex;align-items:center;justify-content:center;font-weight:900;
+}
+.pub-card p{color:#b7c4cc;font-size:13.5px;line-height:1.65}
+.pub-card .btn{align-self:flex-start}
+.ticks{list-style:none;display:flex;flex-direction:column;gap:8px;color:#b7c4cc;font-size:13.5px}
+.ticks li{padding-left:20px;position:relative}
+.ticks li::before{content:"✓";position:absolute;left:0;color:var(--arctic);font-weight:900}
+.dropzone{
+  border:2px dashed var(--line-2);border-radius:12px;padding:22px;text-align:center;color:var(--frost);
+  cursor:pointer;transition:.18s;font-size:13.5px;
+}
+.dropzone:hover,.dropzone.over{border-color:var(--arctic);color:var(--snow);background:rgba(79,179,232,.07)}
+.copy-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;margin:4px 0 8px}
+.copy-item{
+  display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);
+  border-radius:8px;padding:6px 8px;
+}
+.copy-item .k{font-size:10.5px;font-weight:800;color:var(--frost);text-transform:uppercase;width:88px;flex-shrink:0;letter-spacing:.05em}
+.copy-item .v{flex:1;font-size:12px;color:var(--snow);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-item button{background:rgba(79,179,232,.15);border:1px solid var(--line-2);color:var(--arctic);border-radius:6px;font:800 10.5px var(--font);padding:4px 8px;cursor:pointer}
+
+/* store preview mock (Tundra Games look) */
+.store-preview{display:grid;grid-template-columns:340px 1fr;gap:18px;margin-top:10px}
+.sp-card{
+  background:linear-gradient(180deg,rgba(30,36,42,.9),rgba(21,24,28,.95));border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;cursor:default;
+}
+.sp-thumb{aspect-ratio:16/9;background:#1B1F23;position:relative}
+.sp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-meta{padding:12px 14px}
+.sp-meta b{display:block;font-size:15px;margin-bottom:3px}
+.sp-meta small{color:var(--frost);font-size:12px;display:block}
+.sp-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
+.sp-price{font-weight:800;color:var(--snow)}
+.sp-price.free{color:var(--arctic)}
+.sp-rating{font-size:11.5px;color:#8fd0b0}
+.sp-detail h4{font-size:24px;margin-bottom:6px}
+.sp-detail .sp-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.sp-detail .sp-tag{background:rgba(79,179,232,.14);border:1px solid var(--line-2);color:var(--arctic);font-size:11px;font-weight:800;letter-spacing:.05em;padding:3px 9px;border-radius:999px;text-transform:uppercase}
+.sp-kv{display:grid;grid-template-columns:110px 1fr;gap:5px 12px;font-size:13px;margin-bottom:12px}
+.sp-kv span{color:var(--frost)}
+.sp-kv b{color:var(--snow)}
+.sp-desc{color:#b7c4cc;font-size:13.5px;line-height:1.65}
+.sp-shots{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sp-shots img{height:64px;border-radius:6px;border:1px solid var(--line);object-fit:cover}
+.sp-buy{margin-top:14px;display:flex;gap:8px;align-items:center}
+.sp-buy .btn{pointer-events:none}
+
+/* ---------- projects ---------- */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.proj-card{overflow:hidden;padding:0;display:flex;flex-direction:column}
+.proj-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0a0d10}
+.proj-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.proj-body b{font-size:16px}
+.proj-body small{color:var(--frost);font-size:12px}
+.proj-actions{display:flex;gap:6px;margin-top:auto;flex-wrap:wrap}
+
+/* ---------- guide ---------- */
+.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.guide-grid p{color:#b7c4cc;font-size:13.8px;line-height:1.7;margin-bottom:10px}
+.code-mini{
+  background:rgba(0,0,0,.42);border:1px solid var(--line);border-radius:9px;padding:12px;
+  font-size:11.5px;line-height:1.55;color:#9fd6f5;overflow-x:auto;margin-bottom:10px;
+}
+
+/* ---------- footer / modal / toast ---------- */
+.foot{
+  position:relative;z-index:1;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:16px 22px;border-top:1px solid var(--line);color:var(--frost);font-size:12.5px;
+  background:rgba(21,24,28,.6);
+}
+.foot span{color:var(--arctic);font-weight:800}
+.modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(5,8,10,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.modal.on{display:flex}
+.modal-box{
+  position:relative;background:linear-gradient(180deg,#242a30,#181c21);border:1px solid var(--line-2);
+  border-radius:16px;padding:26px;width:min(460px,92vw);box-shadow:var(--shadow);
+}
+.modal-box h3{margin-bottom:14px;color:var(--arctic);letter-spacing:.06em;text-transform:uppercase;font-size:14px}
+.modal-box .radio{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:#cfdbe3;margin-bottom:10px;line-height:1.5}
+.modal-x{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--frost);font-size:16px;cursor:pointer}
+#toast{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+  background:rgba(15,18,22,.94);border:1px solid var(--line-2);color:var(--snow);
+  padding:11px 20px;border-radius:999px;font:700 13.5px var(--font);opacity:0;pointer-events:none;
+  transition:.25s;z-index:200;box-shadow:var(--shadow);
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.autoline{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--frost);cursor:pointer;letter-spacing:.02em}
+.linklike{background:none;border:none;color:var(--arctic);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
+
+/* ---------- code room / AI dock modes ---------- */
+.door-sep{display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--frost);font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.door-sep::before,.door-sep::after{content:"";flex:1;height:1px;background:var(--line)}
+.door-row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.dock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.dock-head h3{margin:0!important}
+.dock-x{background:none;border:1px solid var(--line);color:var(--frost);border-radius:7px;cursor:pointer;padding:3px 9px;font:700 10.5px var(--font);letter-spacing:.06em}
+.dock-x:hover{color:var(--snow);border-color:var(--line-2);background:rgba(122,139,148,.12)}
+.noai-tag{display:none;background:rgba(76,154,42,.18);border-color:rgba(76,154,42,.45);color:#8fdc8f;margin-left:10px;vertical-align:middle}
+#workshopGrid.mode-code #aiCol{display:none}
+#workshopGrid.mode-code{grid-template-columns:1fr 380px}
+#workshopGrid.mode-code .noai-tag{display:inline-block}
+.code-empty h3{font-size:22px;letter-spacing:.02em;text-transform:none;color:var(--snow);margin-bottom:8px}
+.code-empty p{color:#b7c4cc;font-size:14.5px;line-height:1.65;margin-bottom:14px}
+.lang-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.lang-lbl{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--frost)}
+.langsel{
+  background:rgba(0,0,0,.35);color:var(--snow);border:1px solid var(--line-2);border-radius:8px;
+  padding:5px 8px;font:700 12px var(--font);cursor:pointer;
+}
+.fileline{
+  font-family:ui-monospace,Consolas,Menlo,monospace;font-size:11.5px;color:#9fd6f5;
+  background:rgba(79,179,232,.1);border:1px solid var(--line-2);border-radius:6px;padding:3px 8px;
+}
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 8px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--frost)}
+.preview-head b{color:var(--snow);letter-spacing:.06em}
+
+/* ---------- code editor (normal coding) ---------- */
+.editor{
+  position:relative;display:flex;
+  background:#0d1114;border:1px solid var(--line-2);border-radius:12px;
+  height:46vh;min-height:340px;overflow:hidden;
+  font:12.5px/1.55 ui-monospace,"Cascadia Code",Consolas,Menlo,monospace;
+  box-shadow:var(--shadow);
+}
+.ed-gutter{
+  flex:0 0 44px;padding:10px 8px;text-align:right;white-space:pre;overflow:hidden;
+  color:rgba(122,139,148,.55);background:rgba(0,0,0,.35);border-right:1px solid var(--line);
+  user-select:none;font:inherit;
+}
+.ed-hl{
+  position:absolute;left:44px;right:0;top:0;bottom:0;
+  margin:0;padding:10px 14px;overflow:hidden;white-space:pre;
+  pointer-events:none;color:#c9d6de;font:inherit;
+}
+.ed-hl code{font:inherit}
+.editor textarea{
+  position:absolute;left:44px;right:0;top:0;bottom:0;
+  width:calc(100% - 44px);height:100%;
+  margin:0;padding:10px 14px;border:0;resize:none;outline:none;
+  background:transparent;color:transparent;caret-color:#F5FAFF;
+  white-space:pre;overflow:auto;font:inherit;
+}
+.editor textarea::selection{background:rgba(79,179,232,.35)}
+.t-com{color:#6a7d63;font-style:italic}
+.t-str{color:#d9a86c}
+.t-tag{color:#4FB3E8}
+.t-kw{color:#c792ea}
+.t-num{color:#f78c6c}
+
+/* ---------- responsive ---------- */
+@media(max-width:1280px){
+  .workshop{grid-template-columns:260px 1fr 320px}
+  .publish-grid{grid-template-columns:1fr 1fr}
+  .pub-card.wide{grid-column:span 2}
+  .pub-card.direct-card{grid-column:span 2}
+}
+@media(max-width:1020px){
+  .hero{grid-template-columns:1fr}
+  .hero-art{height:280px;order:-1}
+  .workshop{grid-template-columns:1fr}
+  .col-left,.col-right{position:static;max-height:none}
+  .how-strip{grid-template-columns:1fr 1fr}
+  .store-preview{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .topbar{flex-wrap:wrap}
+  .nav{order:3;width:100%;margin:0}
+  .publish-grid{grid-template-columns:1fr}
+  .pub-card.wide{grid-column:span 1}
+  .pub-card.direct-card{grid-column:span 1}
+  .how-strip{grid-template-columns:1fr}
+  .guide-grid{grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<header class="topbar">
+  <a class="brand" href="#" onclick="TS.go('home');return false">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FB3E8"/><stop offset="1" stop-color="#7A8B94"/></linearGradient></defs>
+      <rect width="64" height="64" rx="14" fill="#1B1F23" stroke="rgba(79,179,232,.35)" stroke-width="2"/>
+      <path d="M32 10v44M13 21l38 22M13 43l38-22" stroke="url(#lg)" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="32" cy="32" r="6" fill="#F5FAFF"/>
+    </svg>
+    <div class="wordmark">TUNDRA <span>STUDIO</span><small>AI game forge</small></div>
+  </a>
+  <nav class="nav">
+    <button class="nav-btn on" data-view="home"     onclick="TS.go('home')">Forge</button>
+    <button class="nav-btn"    data-view="code"     onclick="TS.openCode()">Code Room</button>
+    <button class="nav-btn"    data-view="publish"  onclick="TS.go('publish')">Publish</button>
+    <button class="nav-btn"    data-view="projects" onclick="TS.go('projects')">Projects</button>
+    <button class="nav-btn"    data-view="guide"    onclick="TS.go('guide')">Guide</button>
+  </nav>
+  <div class="top-right">
+    <button class="btn ghost sm" id="engineBtn" onclick="TS.openSettings()" title="AI engine — API key">⚙ Engine</button>
+    <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HOME / FORGE LANDING ============ -->
+  <section class="view on" id="view-home">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="kicker">◆ Companion forge for Tundra Publishing</div>
+        <h1>Make games with <em>AI</em>.<br>Ship them to <em>Tundra&nbsp;Games</em>.</h1>
+        <p class="lede">Connect any AI model with <b>your API key</b> — it writes the game code, you edit it
+          like any normal HTML/JS project, then publish a store-ready title to
+          <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra&nbsp;Games</a>.
+          Or skip AI entirely and code the whole thing yourself.</p>
+        <div class="prompt-card">
+          <textarea id="heroPrompt" rows="3" placeholder="e.g. “A cozy flappy game where a little glacier spirit flies through ice caves, easy and chill with a blue palette”…"></textarea>
+          <div class="lang-row"><span class="lang-lbl">Code in</span><div class="chips" id="langChips"></div></div>
+          <div class="prompt-row">
+            <div class="chips" id="ideaChips"></div>
+            <div class="prompt-actions">
+              <button class="btn ghost" onclick="TS.surprise()">💡 Idea</button>
+              <button class="btn ghost" onclick="TS.startTemplate('starter')">▶ Starter template</button>
+              <button class="btn ghost" onclick="TS.startTemplate('empty')">▢ Empty file</button>
+              <button class="btn primary big" id="heroGo" onclick="TS.aiGenerate(true)">⚡ Generate with AI</button>
+            </div>
+          </div>
+          <div class="door-sep"><span>— or skip AI entirely —</span></div>
+          <div class="door-row">
+            <button class="btn ghost" onclick="TS.openCode()">⌨️ Code by hand in the Code Room</button>
+            <button class="btn ghost" id="heroAI2" style="display:none" onclick="TS.openAI()">🤖 Open AI assistant</button>
+            <span class="fine" style="margin:0">The Code Room has no AI anywhere — just you and the code.</span>
+          </div>
+          <div class="fine" id="heroEngineLine" style="margin-top:10px"></div>
+        </div>
+        <div class="hero-stats">
+          <div><b>1 file</b><span>per game — plain HTML/JS</span></div>
+          <div><b>Your key</b><span>the only AI — any model</span></div>
+          <div><b>1 click</b><span>store-ready publish package</span></div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="aurora"></div>
+        <svg class="crystal" viewBox="0 0 200 200">
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FB3E8"/><stop offset=".55" stop-color="#F5FAFF"/><stop offset="1" stop-color="#7A8B94"/></linearGradient></defs>
+          <g stroke="url(#cg)" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M100 12v176M22 56l156 88M22 144l156-88"/>
+            <path d="M100 40l-16 14m16-14l16 14M100 160l-16-14m16 14l16-14"/>
+            <path d="M52 72l-4 21m4-21l21 4M148 128l4-21m-4 21l-21-4"/>
+            <path d="M52 128l-4-21m4 21l21-4M148 72l4 21m-4-21l-21 4"/>
+          </g>
+          <circle cx="100" cy="100" r="13" fill="#F5FAFF"/>
+          <circle cx="100" cy="100" r="22" fill="none" stroke="#4FB3E8" stroke-width="2" opacity=".7"/>
+        </svg>
+        <div class="badge-float b1">index.html — just code</div>
+        <div class="badge-float b2">⚙ API key → any model</div>
+        <div class="badge-float b3">publish.json ✓</div>
+      </div>
+    </div>
+
+    <div class="how-strip">
+      <div class="step"><i>1</i><b>Connect</b><span>Add your API key (OpenAI, or any compatible endpoint). That's the only AI here.</span></div>
+      <div class="step"><i>2</i><b>Generate or code</b><span>Describe a game and let the model write it — or start from a template and type.</span></div>
+      <div class="step"><i>3</i><b>Edit normally</b><span>Real code editor: plain HTML/JS, live preview, no hidden pipeline.</span></div>
+      <div class="step"><i>4</i><b>Publish</b><span>Export a publish package and drop it into Tundra Games.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ WORKSHOP ============ -->
+  <section class="view" id="view-workshop">
+    <div class="workshop" id="workshopEmpty" style="display:none"></div>
+    <div class="workshop" id="workshopGrid">
+      <aside class="panel col-left" id="aiCol">
+        <div class="dock-head">
+          <h3 style="margin:0">AI assistant <span class="tag">API key</span></h3>
+          <button class="dock-x" onclick="TS.closeAI()" title="Close the AI assistant and code by hand">✕ close</button>
+        </div>
+        <textarea id="aiPrompt" rows="3" placeholder="Describe a game to generate — or a change to apply to the current code…"></textarea>
+        <div class="row gap" style="margin-top:8px">
+          <button class="btn primary sm" id="aiGoBtn" onclick="TS.aiGenerate()">⚡ Generate game</button>
+          <button class="btn ghost sm" id="aiModBtn" onclick="TS.aiModify()">→ Apply to code</button>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <button class="chip" onclick="TS.quickFix('Fix any bugs and crashes in this game')">🐛 Fix bugs</button>
+          <button class="chip" onclick="TS.quickFix('Add more juice: particles, screen shake, sound effects, polish')">✨ Juice</button>
+          <button class="chip" onclick="TS.quickFix('Make sure it plays great on mobile with touch controls')">📱 Touch</button>
+        </div>
+        <h3>Activity</h3>
+        <pre class="log" id="aiLog">The only AI here is your API key.
+Configure it under ⚙ Engine.</pre>
+        <div class="fine" id="engineLine"></div>
+        <h3>Project</h3>
+        <div class="row gap">
+          <button class="btn ghost sm" onclick="TS.saveProject()">💾 Save</button>
+          <button class="btn ghost sm" onclick="TS.downloadGame()">⬇ Code</button>
+          <button class="btn ghost sm" onclick="TS.newFrom('empty')">✚ New</button>
+        </div>
+        <p class="fine" id="langNote"></p>
+      </aside>
+
+      <section class="col-mid">
+        <div class="preview-bar">
+          <div class="preview-title" id="buildTitle">—<small id="dirtyFlag"></small><span class="tag noai-tag">no AI</span></div>
+          <div class="row gap">
+            <select id="langSel" class="langsel" onchange="TS.setLang(this.value)" title="Coding language">
+              <option value="js">JavaScript</option>
+              <option value="py">Python</option>
+              <option value="lua">Lua</option>
+            </select>
+            <span class="fileline" id="fileLabel">index.html</span>
+            <label class="autoline"><input type="checkbox" id="autoRun" onchange="TS.setAutoRun(this.checked)"> run on type</label>
+            <button class="btn primary sm" onclick="TS.run()" title="Ctrl+Enter">▶ Run</button>
+            <button class="btn ghost sm" onclick="TS.saveProject()" title="Ctrl+S">💾</button>
+            <button class="btn ghost sm" onclick="TS.downloadGame()">⬇</button>
+          </div>
+        </div>
+
+        <div class="editor" id="editor">
+          <pre class="ed-hl" id="edHl"><code></code></pre>
+          <div class="ed-gutter" id="edGutter">1</div>
+          <textarea id="codeArea" spellcheck="false" wrap="off" placeholder="&lt;!DOCTYPE html&gt; …"></textarea>
+        </div>
+
+        <div class="preview-head">
+          <b>Live preview</b>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureShot()">📸 Capture</button>
+            <button class="btn ghost sm" onclick="TS.captureAll()">✨ Auto media</button>
+          </div>
+        </div>
+        <div class="preview-frame" id="previewFrame">
+          <iframe id="gameFrame" title="Game preview" sandbox="allow-scripts allow-same-origin" src="about:blank"></iframe>
+        </div>
+        <div class="hint-bar" id="ctrlHint">Controls appear here.</div>
+      </section>
+
+      <aside class="panel col-right">
+        <div class="tabs" id="wsTabs">
+          <button class="tab on" data-tab="kit" onclick="TS.wsTab('kit')">Store Kit</button>
+          <button class="tab" data-tab="media" onclick="TS.wsTab('media')">Media</button>
+        </div>
+
+        <div class="tab-pane on" id="pane-kit">
+          <div class="form" id="kitForm"></div>
+          <div class="row gap">
+            <button class="btn primary sm" onclick="TS.go('publish')">Continue to Publish →</button>
+            <button class="btn ghost sm" onclick="TS.saveProject()">💾 Save project</button>
+          </div>
+          <p class="fine">Filled automatically from the game's <code>TUNDRA_META</code> comment when the AI (or you) include one.</p>
+        </div>
+
+        <div class="tab-pane" id="pane-media">
+          <label class="lbl">Cover art
+            <div class="media-box" id="coverBox"></div>
+          </label>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureCover()">From game</button>
+            <label class="btn ghost sm file-btn">Upload<input type="file" accept="image/*" hidden onchange="TS.uploadCover(this)"></label>
+          </div>
+          <label class="lbl" style="margin-top:14px">Screenshots <small id="shotCount"></small>
+            <div class="media-box shots" id="shotGrid"></div>
+          </label>
+          <div class="row gap">
+            <button class="btn ghost sm" onclick="TS.captureShot()">📸 Capture</button>
+            <button class="btn ghost sm" onclick="TS.captureAll()">✨ Auto media</button>
+            <label class="btn ghost sm file-btn">Upload<input type="file" accept="image/*" multiple hidden onchange="TS.uploadShots(this)"></label>
+          </div>
+          <p class="fine">📸 grabs the live game canvas (works with any code). ✨ stages title/play/over shots when the game includes the studio bridge. Media is stored as data-URLs, exactly what the Tundra Games form expects.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ PUBLISH ============ -->
+  <section class="view" id="view-publish">
+    <div class="page-head">
+      <h2>Publish to Tundra Games</h2>
+      <p>Your build is packaged in the exact schema of the
+        <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+        catalog (<code>games · news · promos · users · reviews</code>). Pick any path below.</p>
+    </div>
+
+    <div class="publish-grid">
+      <div class="panel pub-card direct-card">
+        <div class="num">⚡</div>
+        <h3>Publish directly to Tundra Games</h3>
+        <p>Tundra Studio and <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+          share the same site (<code>coder386galaxy.github.io</code>), so the studio can write your title
+          <b>straight into the store's catalog on this device</b>. Open the store and it's on the shelf — no files.</p>
+        <div id="directStatus" class="fine"></div>
+        <div class="row gap">
+          <button class="btn primary" id="directBtn" onclick="TS.directPublish()">⚡ Publish directly</button>
+          <a class="btn ghost" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Tundra Games ↗</a>
+          <button class="btn ghost sm" onclick="TS.directRefresh()">↻ Status</button>
+        </div>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">A</div>
+        <h3>Export publish package</h3>
+        <p>Downloads <code>tundra-publish-…json</code> containing your title (plus a launch news post) in the
+          store's Restore format.</p>
+        <button class="btn primary" onclick="TS.exportPackage()">⬇ Export publish package</button>
+        <p class="fine">On Tundra Games open <b>Publish → Data → Restore</b> and choose the file.
+          ⚠️ Restore replaces the whole catalog — if the store already has titles, use path&nbsp;B.</p>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">B</div>
+        <h3>Merge into existing catalog <span class="tag">recommended</span></h3>
+        <p>Drop the store's last <b>Publish → Data → Export JSON</b> backup here. Tundra Studio weaves your new
+          title into it without touching anything else — then Restore the merged file.</p>
+        <label class="dropzone" id="dropCatalog">
+          <input type="file" accept="application/json" hidden onchange="TS.loadCatalog(this)">
+          <span>Drop catalog JSON or click to browse</span>
+        </label>
+        <div id="mergeStatus" class="fine"></div>
+        <button class="btn primary" id="mergeExportBtn" style="display:none" onclick="TS.exportMerged()">⬇ Export merged catalog</button>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">C</div>
+        <h3>Manual New-Title form</h3>
+        <p>Rather type it in? Copy each field straight into the store's <b>Publish → New Title</b> form.</p>
+        <div id="copyList" class="copy-list"></div>
+        <div class="row gap">
+          <button class="btn ghost sm" onclick="TS.downloadMediaFiles()">⬇ cover + shots</button>
+          <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Publish tab ↗</a>
+        </div>
+      </div>
+
+      <div class="panel pub-card wide">
+        <h3>Storefront preview</h3>
+        <p class="fine">Exactly how your listing renders inside Tundra Games (same palette, card &amp; detail layout).</p>
+        <div class="store-preview" id="storePreview"></div>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">D</div>
+        <h3>Game build file</h3>
+        <p>The playable game itself as a single HTML file (also embedded in the package as <code>gameHTML</code>).</p>
+        <button class="btn ghost" onclick="TS.downloadGame()">⬇ game.html</button>
+      </div>
+
+      <div class="panel pub-card">
+        <div class="num">E</div>
+        <h3>After publishing</h3>
+        <ul class="ticks">
+          <li>Launch news post is bundled in the package</li>
+          <li>Share link: store URL + <code>#game=&lt;id&gt;</code></li>
+          <li>Players buy/claim it, review it, and track play sessions</li>
+        </ul>
+        <a class="btn primary" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Go to Tundra Games ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="view" id="view-projects">
+    <div class="page-head">
+      <h2>Projects</h2>
+      <p>Everything you've built in this browser. Saved automatically.</p>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </section>
+
+  <!-- ============ GUIDE ============ -->
+  <section class="view" id="view-guide">
+    <div class="page-head"><h2>How Tundra Studio works</h2></div>
+    <div class="guide-grid">
+      <div class="panel">
+        <h3>🔑 The only AI is your API key</h3>
+        <p>Tundra Studio has <b>no built-in AI</b>. You bring a key (OpenAI or any OpenAI-compatible endpoint —
+          local LLMs included), pick a model, and prompts go straight from your browser to your endpoint.
+          No middleman, no studio account. Without a key the studio still works — you just code by hand.</p>
+        <p><b>⚡ Generate</b> writes a whole game from your description. <b>→ Apply to code</b> revises the
+          current file from an instruction ("add touch controls", "fix the collision bug"…).</p>
+      </div>
+      <div class="panel">
+        <h3>⌨️ The Code Room — no AI</h3>
+        <p>The <b>Code Room</b> is a workspace with zero AI in it: no prompts, no assistant, nothing
+          calling out to a model. Pick your language — <b>JavaScript</b> (complete HTML document),
+          <b>Python</b> (via Pyodide) or <b>Lua</b> (via Fengari) — and just write.</p>
+        <p>Real editor: syntax highlighting per language, line numbers, tab/indent, Ctrl+Enter to run,
+          Ctrl+S to save. Python and Lua use a small <code>Tundra</code> game API (draw, input, score, juice)
+          and run in the browser — the publish build wraps them automatically.</p>
+        <p>Hand-written <b>Starter game</b> and <b>Empty file</b> templates exist for every language — zero AI involved.
+          Want a model's help later? The Forge page can open an AI assistant on your file — never the other way around.</p>
+      </div>
+      <div class="panel">
+        <h3>🏪 Publishing to Tundra Games</h3>
+        <p>Tundra Games stores its catalog in browser localStorage and moves it with
+          <b>Publish → Data → Export/Restore JSON</b>. Tundra Studio emits that exact schema:</p>
+        <pre class="code-mini">{
+  "games":  [{ id, title, studio, price, date, age,
+               tags, platforms, featured, blurb, desc,
+               image, screens, palette, discount, gameHTML }],
+  "news":   [{ date, title, body, game }],
+  "promos": {}, "users": …, "reviews": …
+}</pre>
+        <p>So a publish is one Restore away. The extra <code>gameHTML</code> field rides along with the catalog
+          (the store ignores fields it doesn't know), keeping the playable build attached to its listing.</p>
+      </div>
+      <div class="panel">
+        <h3>🔐 Everything stays yours</h3>
+        <p>Projects, media and settings live in your browser; games live as files you download.
+          Your prompt never leaves the machine except to the AI endpoint <b>you</b> configured.</p>
+        <p>The optional <code>TUNDRA_META</code> comment at the top of your file just pre-fills the store
+          kit — delete it whenever, it never affects the game.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>TUNDRA <span>STUDIO</span> · the AI game forge for Tundra Publishing</div>
+  <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+</footer>
+
+<!-- settings modal: the only AI = your API key -->
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="TS.closeSettings()">✕</button>
+    <h3>AI engine — your API key</h3>
+    <label class="lbl">Base URL<input class="inp" id="llmBase" placeholder="https://api.openai.com/v1"></label>
+    <label class="lbl">API key<input class="inp" id="llmKey" type="password" placeholder="sk-…"></label>
+    <label class="lbl">Model<input class="inp" id="llmModel" placeholder="gpt-4o-mini"></label>
+    <div class="row gap" style="margin-top:12px">
+      <button class="btn primary sm" onclick="TS.saveSettings()">Save</button>
+      <button class="btn ghost sm" onclick="TS.testEngine()">Test connection</button>
+      <button class="btn ghost sm" onclick="TS.closeSettings()">Close</button>
+    </div>
+    <p class="fine">Requests go straight from your browser to your endpoint — that's the only AI in Tundra Studio.
+      The key is kept in this browser only. Without a key you can still code by hand and publish.</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   TUNDRA LLM — the ONLY AI in Tundra Studio is your API key.
+   Talks to any OpenAI-compatible endpoint (/chat/completions).
+   Generates code in the language the user selected:
+     'js'  -> complete HTML document
+     'py'  -> Python source (Tundra API)
+     'lua' -> Lua source (Tundra API)
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* Screenshot bridge we ask JS-mode games to include (optional, best-effort). */
+  var BRIDGE = [
+    '(function(){',
+    'function grab(){var cs=document.getElementsByTagName("canvas"),c=null;',
+    'for(var i=0;i<cs.length;i++){if(!c||cs[i].width*cs[i].height>c.width*c.height)c=cs[i];}',
+    'try{return c?c.toDataURL("image/jpeg",0.9):null;}catch(e){return null;}}',
+    'parent.postMessage({src:"tundra-game",act:"ready"},"*");',
+    'window.addEventListener("message",function(ev){var m=ev.data||{};if(m.src!=="tundra-studio")return;',
+    'if(m.act==="ping")parent.postMessage({src:"tundra-game",act:"pong",ts:m.ts},"*");',
+    'if(m.act==="shot"){var d=window.tundraShot?window.tundraShot(m.state):grab();',
+    'parent.postMessage({src:"tundra-game",act:"shot",ts:m.ts,state:m.state,data:d},"*");}});',
+    'window.tundraGrab=grab;})();'
+  ].join('\n');
+
+  var META_JS = '<!-- TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description, 2-5 sentences","tags":["3","to","6","words"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"} -->';
+
+  /* Reference for the Tundra game API used by py/lua builds (prompt material). */
+  var API_REF = [
+    'The game runs against a tiny game API (already imported for you):',
+    '  clear(color)                       fill the screen',
+    '  rect(x,y,w,h,color)  circle(x,y,r,color)  line(x1,y1,x2,y2,color,width=2)',
+    '  text(s,x,y,size=16,color="#F5FAFF",align="left")     align: left|center|right',
+    '  set_bg(topColor, bottomColor)      screen gradient (call once in init)',
+    '  set_title(title, subtitle, hint)   configure the title screen',
+    '  rand(a,b)                          random float',
+    '  key(name) / pressed(name)          held / pressed-this-frame. name: "left","right","up","down","a".."z","space","enter","x","z"',
+    '  tapped() pointer_x() pointer_y() pointer_down()      pointer/touch',
+    '  score() add_score(n=1) set_score(n) best() lives() set_lives(n)',
+    '  shake(n=8) flash(a=0.5) burst(x,y,color,n=12) beep(freq=440,dur=0.08)',
+    '  game_over(win=False)               end the run (win=True shows CLEARED!)',
+    '  state()                            "title" | "play" | "pause" | "over"',
+    'Implement up to 4 hooks (plain top-level functions):',
+    '  init()      called on start/restart — reset your world here',
+    '  update(dt)  logic each frame, dt in seconds',
+    '  draw()      render the scene each frame (the runner draws title/game-over overlays and the HUD for you)',
+    '  demo(name)  optional: arrange a pretty scene for screenshots ("title"|"play"|"over")',
+    'The runner handles: title screen -> play (space/tap), pause (P/Esc), game over -> restart (R/tap), score/best HUD, M to mute.'
+  ].join('\n');
+
+  function sysBase(what) {
+    return [
+      'You are the game code generator inside Tundra Studio. You write complete, polished, playable games as ' + what + '.',
+      '',
+      'HARD REQUIREMENTS:',
+      '1. Output ONLY the code. No markdown fences, no commentary before or after.',
+      '2. Fully self-contained and offline: no CDN, no external fonts/images/libraries beyond what is specified.',
+      '3. Complete flow: title screen -> play -> game over -> restart (R key or tap). Show score and best score.',
+      '4. Polish: juice (particles, shake, flash), small beeps (respect an M mute key), smooth difficulty curve. Clean readable code with comments — the user will edit it by hand.',
+      '5. IMMEDIATELY AFTER the first line, include exactly one metadata comment in the language\'s own comment syntax:',
+      '   __META__',
+      '6. Make it fun immediately. Base the game entirely on the user prompt: genre, mood, palette, difficulty, theme.'
+    ].join('\n');
+  }
+
+  var SYS_GEN_JS = sysBase('ONE self-contained HTML document (HTML/CSS/JS)').replace('__META__', META_JS) + [
+    '',
+    'HTML-MODE SPECIFICS:',
+    '- The document must run from a double-clicked file with zero dependencies. Inline everything. Canvas game, logical size 800x450 (letterbox to fit).',
+    '- requestAnimationFrame loop with delta time. Keyboard AND pointer/touch. Guard localStorage with try/catch.',
+    '- Near the end, include this screenshot bridge EXACTLY as-is (used by the studio for store media):',
+    BRIDGE,
+    'Optionally define window.tundraShot = function(state){...} returning a data URL ("title"|"play"|"over") to stage nicer screenshots.'
+  ].join('\n');
+
+  function sysGenScript(langName, metaLine) {
+    return sysBase('ONE source file of ' + langName + ' (no HTML, no markdown — just the program)')
+      .replace('__META__', metaLine) + '\n\n' + API_REF + '\n\n' +
+      'SCRIPT-MODE SPECIFICS:\n' +
+      '- Output ONLY the ' + langName + ' source file contents.\n' +
+      '- Define the hooks as plain top-level functions: init(), update(dt), draw(), optional demo(name).\n' +
+      '- The metadata comment must be the very first line of the file.\n' +
+      '- Nothing else is needed: the studio wraps your file with the runtime, title/HUD overlays and the store bridge.';
+  }
+
+  function sysEdit(lang) {
+    var names = { js: 'an HTML/CSS/JS document', py: 'a Python source file', lua: 'a Lua source file' };
+    return [
+      'You are a senior game developer working inside Tundra Studio. The user gives you ' + (names[lang] || names.js) + ' and a change request.',
+      'Apply the change thoroughly and return the COMPLETE revised code — never a diff, never fragments.',
+      '',
+      'RULES:',
+      '1. Output ONLY the full code. No markdown fences, no commentary.',
+      '2. Keep it self-contained and offline. Keep code readable and commented.',
+      "3. Preserve the user's unrelated code and style. Keep the TUNDRA_META comment (update it only if the change affects title/desc/tags/palette/hint).",
+      '4. Keep the game playable end-to-end (title -> play -> game over -> restart).',
+      lang === 'js' ? '5. Keep the tundra-game screenshot bridge working.' : '5. Keep the init/update/draw hooks and the Tundra API conventions intact.'
+    ].join('\n');
+  }
+
+  /* ---------- extraction ---------- */
+  function stripFences(t) {
+    t = String(t || '').replace(/^\uFEFF/, '').trim();
+    var fence = t.match(/```[a-zA-Z]*[ \t]*\r?\n([\s\S]*?)```/);
+    if (fence) return fence[1].trim();
+    return t.replace(/^```[a-zA-Z]*[ \t]*\r?\n?/, '').replace(/```[ \t]*$/, '').trim();
+  }
+
+  function extractDoc(text) {           // HTML mode: slice out the document
+    var t = stripFences(text);
+    var di = t.search(/<!doctype/i), xi = t.search(/<html/i);
+    var start = di >= 0 ? di : xi;
+    if (start >= 0) {
+      var end = t.search(/<\/html\s*>/i);
+      return (end >= 0 ? t.slice(start, end + t.slice(end).indexOf('>') + 1) : t.slice(start)).trim();
+    }
+    return t;
+  }
+
+  function extractSource(text) {        // script modes: whole program
+    return stripFences(text);
+  }
+
+  function extractMeta(code) {
+    var m = String(code || '')
+      .match(/<!--\s*TUNDRA_META\s*(\{[\s\S]*?\})\s*-->/)
+      || String(code || '').match(/^[ \t]*#[ \t]*TUNDRA_META[ \t]*(\{[^\n]*\})[^\n]*/m)
+      || String(code || '').match(/--[ \t]*TUNDRA_META[ \t]*(\{[^\n]*\})[^\n]*/);
+    if (!m) return null;
+    try {
+      var j = JSON.parse(m[1]);
+      return j && typeof j === 'object' ? j : null;
+    } catch (e) { return null; }
+  }
+
+  function titleOf(code) {
+    var m = String(code || '').match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    return m ? m[1].trim().slice(0, 60) : '';
+  }
+
+  /* ---------- api ---------- */
+  function chat(cfg, messages) {
+    if (!cfg || !cfg.key) return Promise.reject(new Error('No API key — open ⚙ Engine and add one.'));
+    var base = String(cfg.base || 'https://api.openai.com/v1').replace(/\/+$/, '');
+    return fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+      body: JSON.stringify({ model: cfg.model || 'gpt-4o-mini', temperature: 0.7, messages: messages })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) {
+          var msg = (data && data.error && data.error.message) || ('HTTP ' + res.status);
+          throw new Error(msg.slice(0, 140));
+        }
+        var content = data.choices && data.choices[0] && data.choices[0].message
+          ? data.choices[0].message.content : '';
+        if (!content) throw new Error('Empty response from model');
+        return { text: content, usage: data.usage || null, model: data.model || cfg.model };
+      });
+    });
+  }
+
+  function systemFor(lang) {
+    if (lang === 'py') return sysGenScript('Python 3', '# TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description","tags":["3","to","6"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"}');
+    if (lang === 'lua') return sysGenScript('Lua 5.4', '-- TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description","tags":["3","to","6"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"}');
+    return SYS_GEN_JS;
+  }
+
+  function finalize(lang, raw) {
+    var doc = (lang === 'js') ? extractDoc(raw) : extractSource(raw);
+    return { doc: doc, meta: extractMeta(doc), info: null, raw: raw };
+  }
+
+  function generate(cfg, prompt, lang) {
+    lang = lang || 'js';
+    return chat(cfg, [
+      { role: 'system', content: systemFor(lang) },
+      { role: 'user', content: String(prompt || '').trim() }
+    ]).then(function (r) {
+      var out = finalize(lang, r.text);
+      out.info = r;
+      return out;
+    });
+  }
+
+  function modify(cfg, prompt, code, lang) {
+    lang = lang || 'js';
+    return chat(cfg, [
+      { role: 'system', content: sysEdit(lang) },
+      { role: 'user', content: 'CHANGE REQUEST:\n' + String(prompt || '').trim() + '\n\nCURRENT CODE:\n' + String(code || '') }
+    ]).then(function (r) {
+      var out = finalize(lang, r.text);
+      out.info = r;
+      return out;
+    });
+  }
+
+  function test(cfg) {
+    if (!cfg || !cfg.key) return Promise.reject(new Error('Enter an API key first'));
+    var base = String(cfg.base || 'https://api.openai.com/v1').replace(/\/+$/, '');
+    return fetch(base + '/models', {
+      headers: { 'Authorization': 'Bearer ' + cfg.key }
+    }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' — check base URL, key and model');
+      return true;
+    });
+  }
+
+  window.LLM = {
+    generate: generate,
+    modify: modify,
+    chat: chat,
+    test: test,
+    extractDoc: extractDoc,
+    extractSource: extractSource,
+    extractMeta: extractMeta,
+    titleOf: titleOf,
+    systemFor: systemFor,
+    API_REF: API_REF,
+    SYS_GEN_JS: SYS_GEN_JS,
+    BRIDGE: BRIDGE
+  };
+})();
+
+/* ============================================================
+   TUNDRA RUNNER — pick a language, write in it, run it in the
+   browser, publish to Tundra Games.
+
+   Languages:
+     'js'   -> the code IS a complete HTML document (runs raw)
+     'py'   -> game.py, run by Pyodide   (cdn.jsdelivr.net/pyodide)
+     'lua'  -> game.lua, run by Fengari  (fengari-web)
+
+   py/lua games are wrapped in a generated HTML shell that
+   provides the small "Tundra" game API + title/over screens,
+   input, juice, the store screenshot bridge and error overlay.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var LANGS = [
+    { id: 'js',  label: 'JavaScript', file: 'index.html', note: 'complete HTML document — full control' },
+    { id: 'py',  label: 'Python',     file: 'game.py',    note: 'Python 3 via Pyodide, Tundra API' },
+    { id: 'lua', label: 'Lua',        file: 'game.lua',   note: 'Lua 5.4 via Fengari, Tundra API' }
+  ];
+
+  var CDN = {
+    py: { src: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js', id: 'pyodide', status: 'Loading Python runtime (Pyodide)…' },
+    lua: { src: 'https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js', id: 'fengari', status: 'Loading Lua runtime (Fengari)…' }
+  };
+
+  /* ---------------- the Tundra game API (installed into every py/lua build) ---------------- */
+  function installTundra() {
+    var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+    var W = 800, H = 450;
+    cv.width = W; cv.height = H;
+
+    var state = 'title', score = 0, lives = 3, best = 0;
+    var titleText = 'Game', subText = '', hintText = '';
+    var bg1 = '#1B1F23', bg2 = '#0a0d10';
+    var keys = {}, edge = {}, ptr = { x: W / 2, y: H / 2, down: false }, tap = false;
+    var shakeN = 0, flashA = 0, parts = [], tsec = 0, muted = false, AC = null;
+    var hooks = { init: null, update: null, draw: null, demo: null };
+    try { best = +localStorage.getItem('tundra_api_best') || 0; } catch (e) {}
+
+    function saveBest() {
+      try { localStorage.setItem('tundra_api_best', best); } catch (e) {}
+    }
+
+    /* ---- audio ---- */
+    function beep(f, dur, vol) {
+      if (muted) return;
+      try {
+        if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+        if (AC.state === 'suspended') AC.resume();
+        var o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'square'; o.frequency.value = f || 440;
+        g.gain.value = vol || 0.04;
+        g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (dur || 0.08));
+        o.connect(g); g.connect(AC.destination);
+        o.start(); o.stop(AC.currentTime + (dur || 0.08) + 0.02);
+      } catch (e) {}
+    }
+
+    /* ---- drawing ---- */
+    function clear(c) { ctx.fillStyle = c || bg2; ctx.fillRect(0, 0, W, H); }
+    function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+    function circle(x, y, r, c) {
+      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+    }
+    function line(x1, y1, x2, y2, c, w) {
+      ctx.strokeStyle = c; ctx.lineWidth = w || 2;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+    function text(s, x, y, size, c, align) {
+      ctx.fillStyle = c || '#F5FAFF';
+      ctx.font = '700 ' + (size || 16) + 'px system-ui, sans-serif';
+      ctx.textAlign = align || 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(s), x, y);
+      ctx.textAlign = 'left';
+    }
+
+    /* ---- juice ---- */
+    function shake(n) { shakeN = Math.max(shakeN, n || 8); }
+    function flash(a) { flashA = Math.min(1, flashA + (a || 0.5)); }
+    function burst(x, y, c, n) {
+      n = n || 12;
+      for (var i = 0; i < n; i++) {
+        var a = Math.random() * 6.283, sp = 60 + Math.random() * 220;
+        parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: 0.5, c: c, s: 2 + Math.random() * 3 });
+      }
+      if (parts.length > 240) parts.splice(0, parts.length - 240);
+    }
+
+    /* ---- input ---- */
+    function norm(k) {
+      k = String(k).toLowerCase();
+      if (k === 'arrowleft' || k === 'left') return 'left';
+      if (k === 'arrowright' || k === 'right') return 'right';
+      if (k === 'arrowup' || k === 'up') return 'up';
+      if (k === 'arrowdown' || k === 'down') return 'down';
+      if (k === ' ') return 'space';
+      return k;
+    }
+    function key(k) { return !!keys[norm(k)]; }
+    function pressed(k) { return !!edge[norm(k)]; }
+    function tapped() { return tap; }
+
+    document.addEventListener('keydown', function (e) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].indexOf(e.key) >= 0) e.preventDefault();
+      var k = norm(e.key);
+      keys[k] = true; edge[k] = true;
+      if (k === 'm') muted = !muted;
+      if (state === 'title' && (k === 'space' || k === 'enter')) start();
+      else if (state === 'over' && (k === 'r' || k === 'space' || k === 'enter')) start();
+      else if ((state === 'play' || state === 'pause') && (k === 'p' || k === 'escape')) state = state === 'play' ? 'pause' : 'play';
+    });
+    document.addEventListener('keyup', function (e) { keys[norm(e.key)] = false; });
+    function toLocal(e) {
+      var r = cv.getBoundingClientRect();
+      return {
+        x: (e.clientX - r.left) / r.width * W,
+        y: (e.clientY - r.top) / r.height * H
+      };
+    }
+    cv.addEventListener('pointerdown', function (e) {
+      var p = toLocal(e);
+      ptr.x = p.x; ptr.y = p.y; ptr.down = true; tap = true;
+      if (state === 'title' || state === 'over') start();
+    });
+    cv.addEventListener('pointermove', function (e) {
+      var p = toLocal(e); ptr.x = p.x; ptr.y = p.y;
+    });
+    window.addEventListener('pointerup', function () { ptr.down = false; });
+    window.addEventListener('blur', function () { if (state === 'play') state = 'pause'; });
+
+    /* ---- game state ---- */
+    function setTitle(a, b, c) { titleText = String(a || 'Game'); subText = String(b || ''); hintText = String(c || ''); }
+    function set_bg(a, b) { bg1 = a || bg1; bg2 = b || bg2; }
+    function start() {
+      score = 0; lives = 3; parts = []; tap = false;
+      state = 'play';
+      if (hooks.init) hooks.init();
+    }
+    function gameOver(win) {
+      if (score > best) { best = score; saveBest(); }
+      state = 'over';
+      tundraWin = !!win;
+    }
+    var tundraWin = false;
+
+    /* ---- screens ---- */
+    function paintBg() {
+      var g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, bg1); g.addColorStop(1, bg2);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+    function overlay(title, sub, foot) {
+      ctx.fillStyle = 'rgba(5,8,12,0.62)'; ctx.fillRect(0, 0, W, H);
+      text(title, W / 2, H / 2 - 50, 44, '#8fd8ff', 'center');
+      if (sub) text(sub, W / 2, H / 2, 22, '#F5FAFF', 'center');
+      if (foot) text(foot, W / 2, H / 2 + 48, 15, '#cfe0ea', 'center');
+    }
+    function hud() {
+      text(Math.floor(score), 18, 24, 22, '#F5FAFF', 'left');
+      text('BEST ' + Math.floor(best), W - 18, 24, 13, '#F5FAFF', 'right');
+      if (lives > 0) {
+        for (var i = 0; i < lives; i++) circle(W - 24 - i * 24, H - 24, 8, '#ffe27a');
+      }
+    }
+
+    /* ---- frame ---- */
+    function frame(ts) {
+      requestAnimationFrame(frame);
+      var dt = Math.min(0.05, (ts - (frame._last || ts)) / 1000); frame._last = ts;
+      if (state === 'play' || state === 'title') tsec += dt;
+      ctx.save();
+      if (shakeN > 0) {
+        shakeN = Math.max(0, shakeN - dt * 26);
+        ctx.translate((Math.random() - 0.5) * shakeN, (Math.random() - 0.5) * shakeN);
+      }
+      paintBg();
+      if (state === 'play' && hooks.update) hooks.update(dt);
+      if (hooks.draw && state !== 'title') hooks.draw();
+      if (state === 'play') {
+        for (var i = parts.length - 1; i >= 0; i--) {
+          var p = parts[i];
+          p.t -= dt;
+          if (p.t <= 0) { parts.splice(i, 1); continue; }
+          p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 240 * dt;
+        }
+        for (var j = 0; j < parts.length; j++) {
+          var q = parts[j];
+          ctx.globalAlpha = Math.min(1, q.t * 2.2);
+          ctx.fillStyle = q.c;
+          ctx.fillRect(q.x - q.s / 2, q.y - q.s / 2, q.s, q.s);
+        }
+        ctx.globalAlpha = 1;
+        hud();
+      }
+      if (state === 'title') {
+        overlay(titleText, subText, 'PRESS SPACE OR TAP TO START' + (hintText ? '  ·  ' + hintText : ''));
+      } else if (state === 'pause') {
+        overlay('PAUSED', titleText, 'PRESS P OR ESC TO RESUME');
+      } else if (state === 'over') {
+        hud();
+        overlay(tundraWin ? 'CLEARED!' : 'GAME OVER', 'SCORE  ' + Math.floor(score),
+          (score >= best && score > 0 ? '★ NEW BEST! ' : 'BEST ' + Math.floor(best) + '  ·  ') + 'PRESS R OR TAP');
+      }
+      if (flashA > 0) {
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.min(0.55, flashA) + ')';
+        ctx.fillRect(0, 0, W, H);
+        flashA = Math.max(0, flashA - dt * 3.2);
+      }
+      ctx.restore();
+      edge = {}; tap = false;
+    }
+
+    /* ---- studio screenshot bridge ---- */
+    function grab() {
+      try { return cv.toDataURL('image/jpeg', 0.9); } catch (e) { return null; }
+    }
+    function stage(s) {
+      var prev = state, data;
+      var sprev = score, lprev = lives, wprev = tundraWin;
+      if (s === 'title') {
+        state = 'title';
+        paintBg();
+        if (hooks.draw) hooks.draw();
+        if (hooks.demo) hooks.demo('title');
+        overlay(titleText, subText, 'PRESS SPACE OR TAP TO START' + (hintText ? '  ·  ' + hintText : ''));
+        data = grab();
+      } else if (s === 'over') {
+        score = Math.max(score, 4200);
+        state = 'over'; tundraWin = false;
+        paintBg();
+        if (hooks.draw) hooks.draw();
+        if (hooks.demo) hooks.demo('over');
+        hud();
+        overlay('GAME OVER', 'SCORE  ' + Math.floor(score), 'BEST ' + Math.floor(best));
+        data = grab();
+      } else {
+        state = 'play';
+        score = Math.max(score, 1200);
+        paintBg();
+        if (hooks.demo) hooks.demo('play');
+        if (hooks.update) for (var i = 0; i < 20; i++) hooks.update(0.05);
+        if (hooks.draw) hooks.draw();
+        hud();
+        data = grab();
+      }
+      state = prev; score = sprev; lives = lprev; tundraWin = wprev;
+      return data;
+    }
+    window.addEventListener('message', function (ev) {
+      var m = ev.data || {};
+      if (m.src !== 'tundra-studio') return;
+      if (m.act === 'ping') parent.postMessage({ src: 'tundra-game', act: 'pong', ts: m.ts }, '*');
+      if (m.act === 'shot') parent.postMessage({ src: 'tundra-game', act: 'shot', ts: m.ts, state: m.state, data: stage(m.state) }, '*');
+      if (m.act === 'restart') start();
+    });
+    parent.postMessage({ src: 'tundra-game', act: 'ready' }, '*');
+
+    requestAnimationFrame(frame);
+
+    return {
+      W: W, H: H,
+      /* hooks registration (used by the language bootstraps) */
+      _hooks: hooks,
+      /* reads */
+      time: function () { return tsec; },
+      score: function () { return score; },
+      best: function () { return best; },
+      lives: function () { return lives; },
+      state: function () { return state; },
+      pointer_x: function () { return ptr.x; },
+      pointer_y: function () { return ptr.y; },
+      pointer_down: function () { return ptr.down; },
+      tapped: tapped,
+      key: key,
+      pressed: pressed,
+      rand: function (a, b) { return a + Math.random() * ((b == null ? 1 : b) - a); },
+      /* writes */
+      clear: clear, rect: rect, circle: circle, line: line, text: text,
+      set_bg: set_bg, setTitle: setTitle,
+      setScore: function (n) { score = +n || 0; },
+      addScore: function (n) { score += +n || 0; },
+      setLives: function (n) { lives = Math.max(0, Math.round(+n || 0)); },
+      shake: shake, flash: flash, burst: burst, beep: beep,
+      start: start,
+      game_over: gameOver
+    };
+  }
+
+  /* ---------------- language bootstraps (run inside the build) ---------------- */
+  function bootPython(srcJson) {
+    var status = document.getElementById('status');
+    function say(msg, bad) {
+      if (!status) return;
+      status.textContent = msg;
+      status.className = bad ? 'bad' : '';
+      status.style.display = msg ? '' : 'none';
+    }
+    window.onerror = function (m) { say('Error: ' + m, true); };
+    say('Loading Python runtime (Pyodide)…');
+    loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/' }).then(function (py) {
+      say('Starting game…');
+      window._py = py;
+      var prelude = [
+        'from js import Tundra as _t',
+        'W, H = 800, 450',
+        'def clear(c="#0a0d10"): _t.clear(c)',
+        'def rect(x,y,w,h,c): _t.rect(x,y,w,h,c)',
+        'def circle(x,y,r,c): _t.circle(x,y,r,c)',
+        'def line(x1,y1,x2,y2,c="#fff",w=2): _t.line(x1,y1,x2,y2,c,w)',
+        'def text(s,x,y,size=16,c="#F5FAFF",align="left"): _t.text(str(s),x,y,size,c,align)',
+        'def rand(a=0.0,b=1.0): return _t.rand(a,b)',
+        'def key(n): return _t.key(n)',
+        'def pressed(n): return _t.pressed(n)',
+        'def tapped(): return _t.tapped()',
+        'def pointer_x(): return _t.pointer_x()',
+        'def pointer_y(): return _t.pointer_y()',
+        'def pointer_down(): return _t.pointer_down()',
+        'def score(): return _t.score()',
+        'def best(): return _t.best()',
+        'def lives(): return _t.lives()',
+        'def set_score(n): _t.setScore(n)',
+        'def add_score(n=1): _t.addScore(n)',
+        'def set_lives(n): _t.setLives(n)',
+        'def set_bg(a,b): _t.set_bg(a,b)',
+        'def set_title(a,b="",c=""): _t.setTitle(a,b,c)',
+        'def start(): _t.start()',
+        'def game_over(win=False): _t.game_over(bool(win))',
+        'def shake(n=8): _t.shake(n)',
+        'def flash(a=0.5): _t.flash(a)',
+        'def burst(x,y,c,n=12): _t.burst(x,y,c,n)',
+        'def beep(f=440,d=0.08): _t.beep(f,d)',
+        'def state(): return _t.state()'
+      ].join('\n') + '\n';
+      try {
+        py.runPython(prelude + srcJson);
+        var T = window.Tundra;
+        ['init', 'update', 'draw', 'demo'].forEach(function (h) {
+          var fn = py.globals.get(h);
+          if (fn && typeof fn === 'function') T._hooks[h] = function (a) {
+            try { if (a === undefined) fn(); else fn(a); }
+            catch (e) { say('Error in ' + h + '(): ' + (e && e.message || e), true); throw e; }
+          };
+        });
+        say('');
+      } catch (e) {
+        say('Error: ' + (e && e.message || e), true);
+      }
+    }).catch(function (e) {
+      say('Could not load Pyodide (network needed the first time): ' + (e && e.message || e), true);
+    });
+  }
+
+  function bootLua(srcJson) {
+    var status = document.getElementById('status');
+    function say(msg, bad) {
+      if (!status) return;
+      status.textContent = msg;
+      status.className = bad ? 'bad' : '';
+      status.style.display = msg ? '' : 'none';
+    }
+    window.onerror = function (m) { say('Error: ' + m, true); };
+    say('Loading Lua runtime (Fengari)…');
+    try {
+      var f = window.fengari;
+      if (!f) throw new Error('Fengari failed to load (network needed the first time)');
+      var lua = f.lua, lauxlib = f.lauxlib, lualib = f.lualib, to_luastring = f.to_luastring, to_jsstring = f.to_jsstring;
+      var L = lauxlib.luaL_newstate();
+      lualib.luaL_openlibs(L);
+      var prelude = [
+        'local T = require("js").global.Tundra',
+        'W, H = 800, 450',
+        'function clear(c) T:clear(c or "#0a0d10") end',
+        'function rect(x,y,w,h,c) T:rect(x,y,w,h,c) end',
+        'function circle(x,y,r,c) T:circle(x,y,r,c) end',
+        'function line(x1,y1,x2,y2,c,w) T:line(x1,y1,x2,y2,c or "#fff",w or 2) end',
+        'function text(s,x,y,size,c,align) T:text(tostring(s),x,y,size or 16,c or "#F5FAFF",align or "left") end',
+        'function rand(a,b) return T:rand(a or 0, b or 1) end',
+        'function key(n) return T:key(n) end',
+        'function pressed(n) return T:pressed(n) end',
+        'function tapped() return T:tapped() end',
+        'function pointer_x() return T:pointer_x() end',
+        'function pointer_y() return T:pointer_y() end',
+        'function pointer_down() return T:pointer_down() end',
+        'function score() return T:score() end',
+        'function best() return T:best() end',
+        'function lives() return T:lives() end',
+        'function set_score(n) T:setScore(n) end',
+        'function add_score(n) T:addScore(n or 1) end',
+        'function set_lives(n) T:setLives(n) end',
+        'function set_bg(a,b) T:set_bg(a,b) end',
+        'function set_title(a,b,c) T:setTitle(a,b or "",c or "") end',
+        'function start() T:start() end',
+        'function game_over(win) T:game_over(win or false) end',
+        'function shake(n) T:shake(n or 8) end',
+        'function flash(a) T:flash(a or 0.5) end',
+        'function burst(x,y,c,n) T:burst(x,y,c,n or 12) end',
+        'function beep(f,d) T:beep(f or 440, d or 0.08) end',
+        'function state() return T:state() end'
+      ].join('\n') + '\n';
+      if (lua.luaL_dostring(L, to_luastring(prelude + srcJson)) !== lua.LUA_OK) {
+        var err = to_jsstring(lua.lua_tostring(L, -1));
+        say('Error: ' + err, true);
+        return;
+      }
+      var T = window.Tundra;
+      ['init', 'update', 'draw', 'demo'].forEach(function (name) {
+        lua.lua_getglobal(L, to_luastring(name));
+        var isFn = lua.lua_isfunction(L, -1);
+        lua.lua_pop(L, 1);
+        if (isFn) T._hooks[name] = function (a) {
+          lua.lua_getglobal(L, to_luastring(name));
+          var nargs = 0;
+          if (a != null) {
+            if (typeof a === 'string') lua.lua_pushstring(L, to_luastring(a));
+            else lua.lua_pushnumber(L, a);
+            nargs = 1;
+          }
+          if (lua.lua_pcall(L, nargs, 0, 0) !== lua.LUA_OK) {
+            var e = to_jsstring(lua.lua_tostring(L, -1));
+            lua.lua_pop(L, 1);
+            say('Error in ' + name + '(): ' + e, true);
+          }
+        };
+      });
+      say('');
+    } catch (e) {
+      say('Error: ' + (e && e.message || e), true);
+    }
+  }
+
+  /* ---------------- wrapper ---------------- */
+  function escScript(s) {
+    // keep literal </script> sequences from breaking the outer HTML
+    return String(s).replace(/<\//g, '<\\/').replace(/\u2028|\u2029/g, '');
+  }
+
+  function wrap(lang, code, meta) {
+    var cdn = CDN[lang];
+    var bootFn = lang === 'py' ? bootPython : bootLua;
+    var statusMsg = cdn ? cdn.status : '';
+    var title = (meta && meta.title) || 'Game';
+    var hint = (meta && meta.hint) || '';
+    var sub = (meta && meta.blurb) ? String(meta.blurb).slice(0, 60) : '';
+    var pal = (meta && meta.palette) || ['#1B1F23', '#0a0d10'];
+
+    var apiSrc = installTundra.toString();
+    var bootSrc = bootFn.toString();
+    var main = [
+      apiSrc,
+      'window.Tundra = installTundra();',
+      bootSrc,
+      (lang === 'py' ? 'bootPython(' : 'bootLua(') + JSON.stringify(String(code)).replace(/</g, '\\u003c') + ');',
+      'window.Tundra.setTitle(' + JSON.stringify(title) + ', ' + JSON.stringify(sub) + ', ' + JSON.stringify(hint) + ');',
+      'window.Tundra.set_bg(' + JSON.stringify(String(pal[0])) + ', ' + JSON.stringify(String(pal[1] || pal[0])) + ');'
+    ].join('\n');
+
+    return [
+      '<!DOCTYPE html>',
+      '<html lang="en"><head><meta charset="UTF-8">',
+      '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">',
+      '<title>' + String(title).replace(/[<>&]/g, '') + '</title>',
+      '<style>',
+      'html,body{margin:0;height:100%;background:#0a0d10;display:flex;align-items:center;justify-content:center;',
+      'overflow:hidden;-webkit-tap-highlight-color:transparent;font-family:system-ui,sans-serif}',
+      '#cv{width:100%;height:auto;max-height:100vh;aspect-ratio:800/450;cursor:pointer;touch-action:none}',
+      '#status{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(5,8,12,.82);color:#cfe0ea;',
+      'padding:8px 16px;border-radius:999px;font:600 13px system-ui,sans-serif;max-width:86vw;z-index:9}',
+      '#status.bad{color:#ff8a8a;border:1px solid rgba(255,138,138,.4)}',
+      '</style></head><body>',
+      '<canvas id="cv"></canvas>',
+      '<div id="status">' + escScript(statusMsg) + '</div>',
+      '<scr' + 'ipt src="' + cdn.src + '"><' + '/scr' + 'ipt>',
+      '<scr' + 'ipt>',
+      escScript(main),
+      '<' + '/scr' + 'ipt>',
+      '</body></html>'
+    ].join('\n');
+  }
+
+  /* ---------------- AI reference for py/lua prompts (canonical copy lives in llm.js) ---------------- */
+  var API_REF = (window.LLM && window.LLM.API_REF) || '';
+
+  window.Runner = {
+    LANGS: LANGS,
+    CDN: CDN,
+    wrap: wrap,
+    API_REF: API_REF,
+    metaComment: function (lang) {
+      return lang === 'py' ? '#' : lang === 'lua' ? '--' : '<!--';
+    }
+  };
+})();
+
+/* ============================================================
+   TUNDRA TEMPLATES — hand-written starter code.
+   No AI involved: just clean HTML/JS you can edit like any project.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var EMPTY = [
+    '<!DOCTYPE html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    '<!-- TUNDRA_META {"title":"My Game","blurb":"A short store blurb (max 160 chars).","desc":"Store description.","tags":["Indie","Arcade"],"age":"E","price":0,"palette":["#1B1F23","#4FB3E8"],"hint":"describe your controls here"} -->',
+    '<title>My Game</title>',
+    '<style>',
+    '  html, body { margin: 0; height: 100%; background: #0a0d10; color: #F5FAFF;',
+    '               font-family: system-ui, sans-serif; display: grid; place-items: center; }',
+    '</style>',
+    '</head>',
+    '<body>',
+    '',
+    '<!-- your game here -->',
+    '<h1>My Game</h1>',
+    '',
+    '</body>',
+    '</html>'
+  ].join('\n');
+
+  var ARCADE = [
+    '<!DOCTYPE html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="UTF-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    '<!-- TUNDRA_META {"title":"Starfall Catch","blurb":"Catch falling stars, dodge the dark shards, and chase your best score.","desc":"Starfall Catch is a tiny arcade game: guide the aurora orb, collect every star, and never touch a shard. Built as a clean single-file HTML5 starter in Tundra Studio — read the code, change the rules, make it yours.","tags":["Arcade","Catch","Cozy","Indie"],"age":"E","price":0,"palette":["#123a55","#8fd8ff"],"hint":"Arrows / A D or drag to move"} -->',
+    '<title>Starfall Catch</title>',
+    '<style>',
+    '  html, body { margin: 0; height: 100%; background: #0a0d10; display: grid; place-items: center;',
+    '    overflow: hidden; -webkit-tap-highlight-color: transparent; font-family: system-ui, sans-serif; }',
+    '  canvas { width: 100%; height: auto; max-height: 100vh; aspect-ratio: 800 / 450; cursor: pointer; touch-action: none; }',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<canvas id="cv"></canvas>',
+    '<script>',
+    '/* =========================================================',
+    '   STARFALL CATCH — a Tundra Studio starter game.',
+    '   Everything is plain code: read it, change it, break it.',
+    '   Sections: setup -> juice -> screens -> game -> input -> loop',
+    '   ========================================================= */',
+    '',
+    '// ---------- setup ----------',
+    'var cv = document.getElementById("cv"), ctx = cv.getContext("2d");',
+    'var W = 800, H = 450;                    // logical size (letterboxed by CSS)',
+    'cv.width = W; cv.height = H;',
+    '',
+    'var C = { bg1: "#123a55", bg2: "#071b2c", star: "#ffe27a", shard: "#8d87a8",',
+    '          player: "#eaf8ff", font: "#F5FAFF", accent: "#8fd8ff" };  // colors',
+    '',
+    'var state = "title";                      // title | play | over',
+    'var score = 0, best = 0, lives = 3, t = 0;',
+    'var px = W / 2, items = [], parts = [], spawnT = 0, shake = 0, flash = 0;',
+    'var keys = {}, ptr = { x: W / 2, down: false, tap: false };',
+    'var muted = false, AC = null;',
+    '',
+    'try { best = +localStorage.getItem("starfall_best") || 0; } catch (e) {}',
+    '',
+    '// ---------- juice (tiny helpers) ----------',
+    'function beep(f, dur, type, vol) {',
+    '  if (muted) return;',
+    '  try {',
+    '    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();',
+    '    if (AC.state === "suspended") AC.resume();',
+    '    var o = AC.createOscillator(), g = AC.createGain();',
+    '    o.type = type || "square"; o.frequency.value = f;',
+    '    g.gain.value = vol || 0.04;',
+    '    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (dur || 0.08));',
+    '    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + (dur || 0.08) + 0.02);',
+    '  } catch (e) {}',
+    '}',
+    'function burst(x, y, color, n) {',
+    '  for (var i = 0; i < (n || 12); i++) {',
+    '    var a = Math.random() * 6.283, sp = 60 + Math.random() * 200;',
+    '    parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,',
+    '                 t: 0.5, c: color, s: 2 + Math.random() * 3 });',
+    '  }',
+    '}',
+    '',
+    '// ---------- screens ----------',
+    'function drawTitle() {',
+    '  ctx.textAlign = "center";',
+    '  ctx.fillStyle = C.font; ctx.font = "800 52px system-ui, sans-serif";',
+    '  ctx.fillText("Starfall Catch", W / 2, H / 2 - 40);',
+    '  ctx.fillStyle = C.accent; ctx.font = "700 16px system-ui, sans-serif";',
+    '  ctx.fillText("catch the stars \\u00b7 dodge the shards", W / 2, H / 2 + 4);',
+    '  ctx.globalAlpha = 0.5 + 0.5 * Math.sin(t * 4);',
+    '  ctx.fillStyle = C.font; ctx.font = "600 17px system-ui, sans-serif";',
+    '  ctx.fillText("PRESS SPACE OR TAP TO START", W / 2, H / 2 + 56);',
+    '  ctx.globalAlpha = 1; ctx.textAlign = "left";',
+    '}',
+    'function drawOver() {',
+    '  ctx.fillStyle = "rgba(5,8,12,0.62)"; ctx.fillRect(0, 0, W, H);',
+    '  ctx.textAlign = "center";',
+    '  ctx.fillStyle = C.accent; ctx.font = "800 44px system-ui, sans-serif";',
+    '  ctx.fillText("GAME OVER", W / 2, H / 2 - 40);',
+    '  ctx.fillStyle = C.font; ctx.font = "700 22px system-ui, sans-serif";',
+    '  ctx.fillText("SCORE  " + score, W / 2, H / 2 + 6);',
+    '  ctx.font = "600 15px system-ui, sans-serif";',
+    '  ctx.fillText((score >= best && score > 0 ? "NEW BEST! " : "BEST " + best + "  ") + "\\u00b7  PRESS R OR TAP", W / 2, H / 2 + 44);',
+    '  ctx.textAlign = "left";',
+    '}',
+    '',
+    '// ---------- game ----------',
+    'function reset() {',
+    '  score = 0; lives = 3; t = 0; px = W / 2;',
+    '  items = []; parts = []; spawnT = 0.5;',
+    '  state = "play";',
+    '}',
+    'function update(dt) {',
+    '  t += dt;',
+    '  // move the player',
+    '  var sp = 340;',
+    '  if (keys.arrowleft || keys.a) px -= sp * dt;',
+    '  if (keys.arrowright || keys.d) px += sp * dt;',
+    '  if (ptr.down) px += Math.max(-sp * dt * 1.7, Math.min(sp * dt * 1.7, ptr.x - px));',
+    '  px = Math.max(24, Math.min(W - 24, px));',
+    '',
+    '  // spawn stars (good) and shards (bad)',
+    '  spawnT -= dt;',
+    '  if (spawnT <= 0) {',
+    '    spawnT = Math.max(0.28, 0.75 - t * 0.008);',
+    '    items.push({ x: 20 + Math.random() * (W - 40), y: -20,',
+    '                 v: 140 + Math.random() * 120 + t * 3,',
+    '                 good: Math.random() < 0.72, r: Math.random() * 6 });',
+    '  }',
+    '  // move + collide',
+    '  for (var i = items.length - 1; i >= 0; i--) {',
+    '    var it = items[i];',
+    '    it.y += it.v * dt;',
+    '    if (it.y > 396 && it.y < 428 && Math.abs(it.x - px) < 58) {',
+    '      items.splice(i, 1);',
+    '      if (it.good) {',
+    '        score += 10;',
+    '        burst(it.x, it.y, C.star, 10); beep(880, 0.07, "triangle", 0.05);',
+    '      } else {',
+    '        lives--; shake = 10; flash = 0.5;',
+    '        burst(it.x, it.y, C.shard, 16); beep(140, 0.15, "sawtooth", 0.06);',
+    '      }',
+    '    } else if (it.y > H + 20) items.splice(i, 1);',
+    '  }',
+    '  if (lives <= 0) {',
+    '    state = "over";',
+    '    if (score > best) { best = score; try { localStorage.setItem("starfall_best", best); } catch (e) {} }',
+    '  }',
+    '  // particles',
+    '  for (var j = parts.length - 1; j >= 0; j--) {',
+    '    var p = parts[j];',
+    '    p.t -= dt;',
+    '    if (p.t <= 0) { parts.splice(j, 1); continue; }',
+    '    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 240 * dt;',
+    '  }',
+    '  shake = Math.max(0, shake - dt * 26);',
+    '  flash = Math.max(0, flash - dt * 3);',
+    '}',
+    'function draw() {',
+    '  // background',
+    '  var g = ctx.createLinearGradient(0, 0, 0, H);',
+    '  g.addColorStop(0, C.bg1); g.addColorStop(1, C.bg2);',
+    '  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);',
+    '  // items',
+    '  for (var i = 0; i < items.length; i++) {',
+    '    var it = items[i];',
+    '    ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.r + t);',
+    '    ctx.fillStyle = it.good ? C.star : C.shard;',
+    '    if (it.good) {',
+    '      ctx.beginPath();',
+    '      for (var k = 0; k < 5; k++) {',
+    '        var a1 = -Math.PI / 2 + k * 1.2566, a2 = a1 + 0.6283;',
+    '        ctx.lineTo(Math.cos(a1) * 11, Math.sin(a1) * 11);',
+    '        ctx.lineTo(Math.cos(a2) * 5, Math.sin(a2) * 5);',
+    '      }',
+    '      ctx.closePath(); ctx.fill();',
+    '    } else {',
+    '      ctx.beginPath();',
+    '      ctx.moveTo(0, -13); ctx.lineTo(9, 10); ctx.lineTo(-9, 10);',
+    '      ctx.closePath(); ctx.fill();',
+    '    }',
+    '    ctx.restore();',
+    '  }',
+    '  // player',
+    '  ctx.fillStyle = C.player;',
+    '  ctx.beginPath(); ctx.arc(px, 412, 16, 0, 6.283); ctx.fill();',
+    '  ctx.fillStyle = C.accent;',
+    '  ctx.beginPath(); ctx.arc(px, 412, 8, 0, 6.283); ctx.fill();',
+    '  // particles',
+    '  for (var j = 0; j < parts.length; j++) {',
+    '    var p = parts[j];',
+    '    ctx.globalAlpha = Math.min(1, p.t * 2.2);',
+    '    ctx.fillStyle = p.c;',
+    '    ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);',
+    '  }',
+    '  ctx.globalAlpha = 1;',
+    '  // hud',
+    '  ctx.fillStyle = C.font; ctx.font = "700 22px system-ui, sans-serif";',
+    '  ctx.textAlign = "left";',
+    '  ctx.fillText(String(score), 18, 30);',
+    '  ctx.textAlign = "right";',
+    '  ctx.font = "600 13px system-ui, sans-serif"; ctx.globalAlpha = 0.75;',
+    '  ctx.fillText("BEST " + best, W - 18, 28);',
+    '  ctx.textAlign = "left";',
+    '  for (var h = 0; h < lives; h++) {',
+    '    ctx.fillStyle = C.star;',
+    '    ctx.beginPath(); ctx.arc(W - 24 - h * 24, H - 24, 8, 0, 6.283); ctx.fill();',
+    '  }',
+    '  ctx.globalAlpha = 1;',
+    '}',
+    '',
+    '// ---------- input ----------',
+    'document.addEventListener("keydown", function (e) {',
+    '  if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].indexOf(e.key) >= 0) e.preventDefault();',
+    '  keys[e.key.toLowerCase()] = true;',
+    '  if (state === "title" && (e.key === " " || e.key === "Enter")) reset();',
+    '  else if (state === "over" && (e.key.toLowerCase() === "r" || e.key === " " || e.key === "Enter")) reset();',
+    '  else if (e.key.toLowerCase() === "m") muted = !muted;',
+    '});',
+    'document.addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = false; });',
+    'cv.addEventListener("pointerdown", function (e) {',
+    '  ptr.down = true; ptr.tap = true;',
+    '  ptr.x = (e.clientX - cv.getBoundingClientRect().left) / cv.getBoundingClientRect().width * W;',
+    '  if (state !== "play") reset();',
+    '});',
+    'cv.addEventListener("pointermove", function (e) {',
+    '  ptr.x = (e.clientX - cv.getBoundingClientRect().left) / cv.getBoundingClientRect().width * W;',
+    '});',
+    'window.addEventListener("pointerup", function () { ptr.down = false; });',
+    '',
+    '// ---------- loop ----------',
+    'var last = 0;',
+    'function loop(ts) {',
+    '  requestAnimationFrame(loop);',
+    '  var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;',
+    '  if (state === "title") t += dt;',
+    '  else if (state === "play") update(dt);',
+    '  ctx.save();',
+    '  if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);',
+    '  if (state === "title") { draw(); drawTitle(); }',
+    '  else if (state === "play") draw();',
+    '  else { draw(); drawOver(); }',
+    '  if (flash > 0) { ctx.fillStyle = "rgba(255,255,255," + flash + ")"; ctx.fillRect(0, 0, W, H); }',
+    '  ctx.restore();',
+    '  ptr.tap = false;',
+    '}',
+    'requestAnimationFrame(loop);',
+    '',
+    '/* ---------- studio bridge (screenshots for the store) ---------- */',
+    'function grab() {',
+    '  try { return cv.toDataURL("image/jpeg", 0.9); } catch (e) { return null; }',
+    '}',
+    'window.tundraShot = function (s) {          // staged screenshots',
+    '  var prev = state, data;',
+    '  if (s === "title") { state = "title"; draw(); drawTitle(); data = grab(); }',
+    '  else if (s === "over") { reset(); score = 4200; lives = 0; state = "over"; draw(); drawOver(); data = grab(); }',
+    '  else { reset(); for (var i = 0; i < 25; i++) update(0.05); draw(); data = grab(); }',
+    '  state = prev;',
+    '  return data;',
+    '};',
+    'parent.postMessage({ src: "tundra-game", act: "ready" }, "*");',
+    'window.addEventListener("message", function (ev) {',
+    '  var m = ev.data || {};',
+    '  if (m.src !== "tundra-studio") return;',
+    '  if (m.act === "ping") parent.postMessage({ src: "tundra-game", act: "pong", ts: m.ts }, "*");',
+    '  if (m.act === "shot") parent.postMessage({ src: "tundra-game", act: "shot", ts: m.ts, state: m.state,',
+    '    data: window.tundraShot ? window.tundraShot(m.state) : grab() }, "*");',
+    '});',
+    '<' + '/script>',
+    '</body>',
+    '</html>'
+  ].join('\n');
+
+  /* ---------- Python starter (runs via Pyodide + Tundra API) ---------- */
+  var PY_META = '# TUNDRA_META {"title":"Starfall Catch","blurb":"Catch falling stars, dodge the dark shards, and chase your best score.","desc":"Starfall Catch is a tiny arcade game: guide the aurora orb, collect every star, and never touch a shard. Written in Python with the Tundra API — read the code, change the rules, make it yours.","tags":["Arcade","Catch","Cozy","Indie"],"age":"E","price":0,"palette":["#123a55","#8fd8ff"],"hint":"Arrows / A D or drag to move"}';
+
+  var STARFALL_PY = [
+    PY_META,
+    '# STARFALL CATCH — a Tundra Studio starter game (Python).',
+    '# Everything is plain code: read it, change it, break it.',
+    '# Hooks: init() on start/restart, update(dt) each frame, draw() each frame.',
+    '',
+    'px = 400.0            # player x',
+    'items = []            # falling stars and shards',
+    'spawn_t = 0.0',
+    't = 0.0               # seconds survived (drives difficulty)',
+    '',
+    'def init():',
+    '    global px, items, spawn_t, t',
+    '    px, items, spawn_t, t = 400.0, [], 0.5, 0.0',
+    '    set_lives(3)',
+    '    set_score(0)',
+    '    set_bg("#123a55", "#071b2c")',
+    '    set_title("Starfall Catch", "catch the stars - dodge the shards", "Arrows / A D or drag")',
+    '',
+    'def update(dt):',
+    '    global px, spawn_t, t',
+    '    t += dt',
+    '    # move the player',
+    '    if key("left") or key("a"):',
+    '        px -= 340 * dt',
+    '    if key("right") or key("d"):',
+    '        px += 340 * dt',
+    '    if pointer_down():',
+    '        step = 340 * dt * 1.7',
+    '        dx = pointer_x() - px',
+    '        px += max(-step, min(step, dx))',
+    '    px = max(24.0, min(776.0, px))',
+    '',
+    '    # spawn stars (good) and shards (bad)',
+    '    spawn_t -= dt',
+    '    if spawn_t <= 0:',
+    '        spawn_t = max(0.28, 0.75 - t * 0.008)',
+    '        items.append({',
+    '            "x": rand(20, 780), "y": -20.0,',
+    '            "v": rand(140, 260) + t * 3,',
+    '            "good": rand(0, 1) < 0.72, "r": rand(0, 6)',
+    '        })',
+    '',
+    '    # move + collide',
+    '    for it in items[:]:',
+    '        it["y"] += it["v"] * dt',
+    '        if 396 < it["y"] < 428 and abs(it["x"] - px) < 58:',
+    '            items.remove(it)',
+    '            if it["good"]:',
+    '                add_score(10)',
+    '                burst(it["x"], it["y"], "#ffe27a", 10)',
+    '                beep(880, 0.07)',
+    '            else:',
+    '                set_lives(lives() - 1)',
+    '                shake(10)',
+    '                flash(0.5)',
+    '                burst(it["x"], it["y"], "#8d87a8", 16)',
+    '                beep(140, 0.15)',
+    '        elif it["y"] > 470:',
+    '            items.remove(it)',
+    '',
+    '    if lives() <= 0:',
+    '        game_over()',
+    '',
+    'def draw():',
+    '    for it in items:',
+    '        if it["good"]:',
+    '            circle(it["x"], it["y"], 11, "#ffe27a")   # a star',
+    '        else:',
+    '            circle(it["x"], it["y"], 13, "#8d87a8")   # a shard',
+    '    # the player orb',
+    '    circle(px, 412, 16, "#eaf8ff")',
+    '    circle(px, 412, 8, "#8fd8ff")',
+    '',
+    'def demo(name):',
+    '    # pretty scene for store screenshots',
+    '    global items',
+    '    if name == "play":',
+    '        items = [{"x": 250, "y": 120, "v": 0, "good": True, "r": 0},',
+    '                 {"x": 430, "y": 190, "v": 0, "good": False, "r": 1},',
+    '                 {"x": 580, "y": 90, "v": 0, "good": True, "r": 2}]',
+  ].join('\n');
+
+  var EMPTY_PY = [
+    '# TUNDRA_META {"title":"My Game","blurb":"A short store blurb (max 160 chars).","desc":"Store description.","tags":["Indie","Arcade"],"age":"E","price":0,"palette":["#1B1F23","#4FB3E8"],"hint":"describe your controls here"}',
+    '# My Game — Tundra Studio (Python). Hooks: init(), update(dt), draw().',
+    '',
+    'def init():',
+    '    set_bg("#1B1F23", "#0a0d10")',
+    '    set_title("My Game", "", "")',
+    '    set_score(0)',
+    '',
+    'def update(dt):',
+    '    pass  # your logic here',
+    '',
+    'def draw():',
+    '    text("My Game", 400, 200, 32, "#F5FAFF", "center")',
+  ].join('\n');
+
+  /* ---------- Lua starter (runs via Fengari + Tundra API) ---------- */
+  var LUA_META = '-- TUNDRA_META {"title":"Starfall Catch","blurb":"Catch falling stars, dodge the dark shards, and chase your best score.","desc":"Starfall Catch is a tiny arcade game: guide the aurora orb, collect every star, and never touch a shard. Written in Lua with the Tundra API — read the code, change the rules, make it yours.","tags":["Arcade","Catch","Cozy","Indie"],"age":"E","price":0,"palette":["#123a55","#8fd8ff"],"hint":"Arrows / A D or drag to move"}';
+
+  var STARFALL_LUA = [
+    LUA_META,
+    '-- STARFALL CATCH — a Tundra Studio starter game (Lua).',
+    '-- Everything is plain code: read it, change it, break it.',
+    '-- Hooks: init() on start/restart, update(dt) each frame, draw() each frame.',
+    '',
+    'local px, items, spawn_t, t = 400, {}, 0.5, 0',
+    '',
+    'function init()',
+    '  px, items, spawn_t, t = 400, {}, 0.5, 0',
+    '  set_lives(3)',
+    '  set_score(0)',
+    '  set_bg("#123a55", "#071b2c")',
+    '  set_title("Starfall Catch", "catch the stars - dodge the shards", "Arrows / A D or drag")',
+    'end',
+    '',
+    'function update(dt)',
+    '  t = t + dt',
+    '  -- move the player',
+    '  if key("left") or key("a") then px = px - 340 * dt end',
+    '  if key("right") or key("d") then px = px + 340 * dt end',
+    '  if pointer_down() then',
+    '    local step = 340 * dt * 1.7',
+    '    local dx = pointer_x() - px',
+    '    px = px + math.max(-step, math.min(step, dx))',
+    '  end',
+    '  px = math.max(24, math.min(776, px))',
+    '',
+    '  -- spawn stars (good) and shards (bad)',
+    '  spawn_t = spawn_t - dt',
+    '  if spawn_t <= 0 then',
+    '    spawn_t = math.max(0.28, 0.75 - t * 0.008)',
+    '    table.insert(items, {',
+    '      x = rand(20, 780), y = -20,',
+    '      v = rand(140, 260) + t * 3,',
+    '      good = rand(0, 1) < 0.72, r = rand(0, 6)',
+    '    })',
+    '  end',
+    '',
+    '  -- move + collide',
+    '  for i = #items, 1, -1 do',
+    '    local it = items[i]',
+    '    it.y = it.y + it.v * dt',
+    '    if it.y > 396 and it.y < 428 and math.abs(it.x - px) < 58 then',
+    '      table.remove(items, i)',
+    '      if it.good then',
+    '        add_score(10)',
+    '        burst(it.x, it.y, "#ffe27a", 10)',
+    '        beep(880, 0.07)',
+    '      else',
+    '        set_lives(lives() - 1)',
+    '        shake(10)',
+    '        flash(0.5)',
+    '        burst(it.x, it.y, "#8d87a8", 16)',
+    '        beep(140, 0.15)',
+    '      end',
+    '    elseif it.y > 470 then',
+    '      table.remove(items, i)',
+    '    end',
+    '  end',
+    '',
+    '  if lives() <= 0 then game_over() end',
+    'end',
+    '',
+    'function draw()',
+    '  for _, it in ipairs(items) do',
+    '    if it.good then',
+    '      circle(it.x, it.y, 11, "#ffe27a")',
+    '    else',
+    '      circle(it.x, it.y, 13, "#8d87a8")',
+    '    end',
+    '  end',
+    '  circle(px, 412, 16, "#eaf8ff")',
+    '  circle(px, 412, 8, "#8fd8ff")',
+    'end',
+    '',
+    'function demo(name)',
+    '  if name == "play" then',
+    '    items = {',
+    '      {x = 250, y = 120, v = 0, good = true, r = 0},',
+    '      {x = 430, y = 190, v = 0, good = false, r = 1},',
+    '      {x = 580, y = 90, v = 0, good = true, r = 2}',
+    '    }',
+    '  end',
+    'end',
+  ].join('\n');
+
+  var EMPTY_LUA = [
+    '-- TUNDRA_META {"title":"My Game","blurb":"A short store blurb (max 160 chars).","desc":"Store description.","tags":["Indie","Arcade"],"age":"E","price":0,"palette":["#1B1F23","#4FB3E8"],"hint":"describe your controls here"}',
+    '-- My Game — Tundra Studio (Lua). Hooks: init(), update(dt), draw().',
+    '',
+    'function init()',
+    '  set_bg("#1B1F23", "#0a0d10")',
+    '  set_title("My Game", "", "")',
+    '  set_score(0)',
+    'end',
+    '',
+    'function update(dt)',
+    '  -- your logic here',
+    'end',
+    '',
+    'function draw()',
+    '  text("My Game", 400, 200, 32, "#F5FAFF", "center")',
+    'end',
+  ].join('\n');
+
+  window.Templates = {
+    arcade: { id: 'arcade', label: 'Starter game', desc: 'Commented canvas game — catch stars, dodge shards', code: ARCADE },
+    empty:  { id: 'empty',  label: 'Empty page',   desc: 'Bare HTML skeleton', code: EMPTY },
+    /* language-aware access: get(lang, 'starter'|'empty') */
+    get: function (lang, kind) {
+      var starter = kind !== 'empty';
+      if (lang === 'py') return { code: starter ? STARFALL_PY : EMPTY_PY, label: starter ? 'Starter game (Python)' : 'Empty Python file' };
+      if (lang === 'lua') return { code: starter ? STARFALL_LUA : EMPTY_LUA, label: starter ? 'Starter game (Lua)' : 'Empty Lua file' };
+      return { code: starter ? ARCADE : EMPTY, label: starter ? 'Starter game' : 'Empty page' };
+    }
+  };
+})();
+
+/* ============================================================
+   TUNDRA EDITOR — a plain, normal code editor.
+   Transparent textarea over a highlighted <pre>, line numbers,
+   tab/indent, Ctrl+S save, Ctrl+Enter run. No frameworks.
+   Languages: 'js' (HTML/JS), 'py' (Python), 'lua' (Lua).
+   ============================================================ */
+(function () {
+  'use strict';
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  var KW = {
+    js: 'var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|try|catch|finally|typeof|instanceof|null|true|false|undefined|async|await|in|of|delete|void',
+    py: 'def|class|if|elif|else|for|while|return|import|from|as|try|except|finally|with|lambda|True|False|None|not|in|is|and|or|pass|break|continue|global|nonlocal|yield|raise|assert|del',
+    lua: 'local|function|end|if|then|else|elseif|for|while|do|return|nil|true|false|and|or|not|repeat|until|in|break'
+  };
+
+  function buildRE(lang) {
+    var kw = KW[lang] || KW.js;
+    var com;
+    if (lang === 'py') com = '(#[^\\n]*)';
+    else if (lang === 'lua') com = '(--\\[\\[[\\s\\S]*?\\]\\]|--[^\\n]*)';
+    else com = '(&lt;!--[\\s\\S]*?--&gt;|/\\*[\\s\\S]*?\\*/|//[^\\n]*)';
+    return new RegExp([
+      com,                                                     // 1 comments
+      '("(?:[^"\\\\\\n]|\\\\.)*"|\'(?:[^\'\\\\\\n]|\\\\.)*\')', // 2 strings
+      lang === 'js' ? '(&lt;/?[A-Za-z][A-Za-z0-9-]*(?=[\\s/&])|/?&gt;)' : '(__NOTAGS__)', // 3 tags
+      '\\b(' + kw + ')\\b',                                     // 4 keywords
+      '\\b(\\d+(?:\\.\\d+)?)\\b'                                // 5 numbers
+    ].join('|'), 'g');
+  }
+
+  var RES = { js: buildRE('js'), py: buildRE('py'), lua: buildRE('lua') };
+  var LANG = 'js';
+
+  function highlight(src) {
+    var re = RES[LANG] || RES.js;
+    re.lastIndex = 0;
+    return esc(src).replace(re, function (m, com, str, tag, kw, num) {
+      if (com) return '<span class="t-com">' + m + '</span>';
+      if (str) return '<span class="t-str">' + m + '</span>';
+      if (tag && tag !== '__NOTAGS__') return '<span class="t-tag">' + m + '</span>';
+      if (kw) return '<span class="t-kw">' + m + '</span>';
+      if (num) return '<span class="t-num">' + m + '</span>';
+      return m;
+    });
+  }
+
+  function setLanguage(lang) {
+    LANG = KW[lang] ? lang : 'js';
+  }
+
+  /* opts: { ta, gutter, hl, onRun, onSave, onChange } */
+  function mount(opts) {
+    var ta = opts.ta, gutter = opts.gutter, hl = opts.hl, code = hl.querySelector('code');
+    var silent = false;
+
+    function refresh() {
+      var v = ta.value;
+      code.innerHTML = highlight(v) + '\n';
+      var lines = v.split('\n').length;
+      var g = '';
+      for (var i = 1; i <= lines; i++) g += i + '\n';
+      gutter.textContent = g;
+      if (opts.onChange && !silent) opts.onChange();
+    }
+
+    function syncScroll() {
+      hl.scrollTop = ta.scrollTop;
+      hl.scrollLeft = ta.scrollLeft;
+      gutter.scrollTop = ta.scrollTop;
+    }
+
+    ta.addEventListener('input', refresh);
+    ta.addEventListener('scroll', syncScroll);
+
+    ta.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var v = ta.value, s = ta.selectionStart, t = ta.selectionEnd;
+        if (s === t) {
+          ta.value = v.slice(0, s) + '  ' + v.slice(t);
+          ta.selectionStart = ta.selectionEnd = s + 2;
+        } else {
+          var block = v.slice(s, t);
+          var out = e.shiftKey ? block.replace(/^ {1,2}/gm, '') : block.replace(/^/gm, '  ');
+          ta.value = v.slice(0, s) + out + v.slice(t);
+          ta.selectionStart = s;
+          ta.selectionEnd = s + out.length;
+        }
+        refresh();
+        return;
+      }
+      var mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key === 'Enter') { e.preventDefault(); if (opts.onRun) opts.onRun(); return; }
+      if (mod && (e.key === 's' || e.key === 'S')) { e.preventDefault(); if (opts.onSave) opts.onSave(); return; }
+    });
+
+    return {
+      getValue: function () { return ta.value; },
+      setValue: function (v) {
+        silent = true;
+        ta.value = v;
+        silent = false;
+        refresh();
+        ta.scrollTop = 0; syncScroll();
+      },
+      setLanguage: function (lang) {
+        setLanguage(lang);
+        refresh();
+      },
+      refresh: refresh,
+      focus: function () { ta.focus(); }
+    };
+  }
+
+  window.TundraEditor = { mount: mount, highlight: highlight, setLanguage: setLanguage };
+})();
+
+/* ============================================================
+   TUNDRA STORE KIT — schema-locked publishing for Tundra Games
+   Game object fields match the store's Publish → New Title form:
+   id, title, studio, price, date, age, tags, platforms, featured,
+   blurb, desc, image, screens, palette, discount  (+ gameHTML ext.)
+   Restore JSON shape: { games, news, promos, users?, reviews? }
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const AGES = ['', 'E', 'E10+', 'T', 'M', 'AO'];
+  const PLATFORMS = ['Windows', 'Mac', 'Linux'];
+
+  function today() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function fmtDate(d) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function slugId(title) {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + '-' + Date.now().toString(36);
+  }
+
+  function money(n) { return '$' + (+n).toFixed(2); }
+
+  /* ---------- image helpers ---------- */
+  function dataURLToCanvas(src, w, h) {
+    return new Promise(function (res, rej) {
+      const img = new Image();
+      img.onload = function () {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const x = c.getContext('2d');
+        x.drawImage(img, 0, 0, w, h);
+        res(c);
+      };
+      img.onerror = function () { rej(new Error('image load failed')); };
+      img.src = src;
+    });
+  }
+
+  // compress any data-URL into a jpeg data-URL at maxW x maxH (keeps store localStorage small)
+  function compressDataURL(src, maxW, maxH, q) {
+    return dataURLToCanvas(src, maxW, maxH).then(function (c) {
+      return c.toDataURL('image/jpeg', q || 0.85);
+    }).catch(function () { return src; });
+  }
+
+  function fileToDataURL(file) {
+    return new Promise(function (res) {
+      const r = new FileReader();
+      r.onload = function () { res(r.result); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  /* ---------- procedural fallback art (store's own visual language) ---------- */
+  function hashS(s) {
+    let h = 7;
+    for (let i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) % 2147483647;
+    return h || 1;
+  }
+  function rng(seed) {
+    let s = (seed >>> 0) || 1;
+    return function () { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  }
+
+  function proceduralArt(title, palette, w, h, seedOff, withTitle) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    const a = palette[0] || '#1B1F23', b = palette[1] || '#4FB3E8';
+    const g = x.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, a); g.addColorStop(1, b);
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+    const r = rng(hashS(title + '::' + (seedOff || 0)));
+    for (let i = 0; i < 8; i++) {
+      x.beginPath();
+      x.arc(r() * w, r() * h, 40 + r() * 160, 0, 6.283);
+      x.fillStyle = r() > 0.5 ? b : '#F5FAFF';
+      x.globalAlpha = 0.08 + r() * 0.15;
+      x.fill();
+    }
+    x.globalAlpha = 1;
+    if (withTitle) {
+      x.fillStyle = 'rgba(5,8,12,0.35)';
+      x.fillRect(0, h * 0.62, w, h * 0.38);
+      x.fillStyle = '#F5FAFF';
+      x.font = '800 ' + Math.round(h / 8) + 'px system-ui, sans-serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(title, w / 2, h * 0.78, w * 0.9);
+    }
+    return c.toDataURL('image/jpeg', 0.85);
+  }
+
+  /* ---------- field validation (mirrors the store's publishGame) ---------- */
+  function validate(fields) {
+    const errs = [];
+    if (!fields.title || !fields.title.trim()) errs.push('Title is required');
+    if ((fields.blurb || '').length > 160) errs.push('Short description must be ≤ 160 chars');
+    if (!(fields.price >= 0)) errs.push('Price must be ≥ 0 (0 = free)');
+    if (!fields.date || !/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) errs.push('Release date must be YYYY-MM-DD');
+    if (AGES.indexOf(fields.age) < 0) errs.push('Age rating must be one of ' + AGES.join('/'));
+    if (!(fields.platforms || []).every(p => PLATFORMS.indexOf(p) >= 0)) errs.push('Platforms must be Windows/Mac/Linux');
+    return errs;
+  }
+
+  /* ---------- build the store game object ---------- */
+  function buildGameObject(fields, gameHTML) {
+    const now = today();
+    return {
+      id: fields.id || slugId(fields.title || 'game'),
+      title: fields.title || 'Untitled',
+      studio: fields.studio || 'Tundra Publishing',
+      price: Math.max(0, +fields.price || 0),
+      date: fields.date || now,
+      age: fields.age || '',
+      tags: Array.from(new Set((fields.tags || []).map(t => String(t).trim()).filter(Boolean))).slice(0, 8),
+      platforms: (fields.platforms || []).slice(),
+      featured: !!fields.featured,
+      blurb: String(fields.blurb || '').trim().slice(0, 160),
+      desc: String(fields.desc || '').trim(),
+      image: fields.image || null,          // data-URL (jpeg/png)
+      screens: (fields.screens || []).slice(0, 6), // data-URLs
+      palette: fields.palette || ['#1B1F23', '#4FB3E8'],
+      discount: 0,
+      // extension fields — ignored by the store UI, preserved in catalog JSON
+      gameHTML: gameHTML || null,
+      madeWith: 'Tundra Studio'
+    };
+  }
+
+  function launchNews(game) {
+    return {
+      date: today(),
+      title: game.title + ' is out now on Tundra Games',
+      body: (game.blurb || 'A new title') + ' Built with Tundra Studio — the AI game forge for Tundra Publishing. Grab it from the store page and tell us what you think in the reviews.',
+      game: game.id
+    };
+  }
+
+  /* ---------- packages ---------- */
+  function buildPackage(game) {
+    return {
+      games: [game],
+      news: [launchNews(game)],
+      promos: {}
+      // users / reviews intentionally omitted: store's Restore keeps existing when absent
+    };
+  }
+
+  function mergeCatalog(catalog, game, news) {
+    const out = {
+      games: Array.isArray(catalog.games) ? catalog.games.slice() : [],
+      news: Array.isArray(catalog.news) ? catalog.news.slice() : [],
+      promos: catalog.promos || {}
+    };
+    if (catalog.users) out.users = catalog.users;
+    if (catalog.reviews) out.reviews = catalog.reviews;
+    const i = out.games.findIndex(g => g.id === game.id);
+    if (i >= 0) out.games[i] = game; else out.games.push(game);
+    if (news !== false) out.news.unshift(news || launchNews(game));
+    return out;
+  }
+
+  function download(filename, text) {
+    const blob = new Blob([text], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function downloadDataURL(filename, dataURL) {
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { a.remove(); }, 1000);
+  }
+
+  /* ---------- copy list for the store's New Title form ---------- */
+  function copyRows(game) {
+    return [
+      { k: 'Title', v: game.title },
+      { k: 'Developer', v: game.studio },
+      { k: 'Price USD', v: String(game.price) },
+      { k: 'Release date', v: game.date },
+      { k: 'Age rating', v: game.age || '(none)' },
+      { k: 'Tags', v: game.tags.join(', ') },
+      { k: 'Platforms', v: game.platforms.join(' · ') || '(none)' },
+      { k: 'Short desc', v: game.blurb },
+      { k: 'Full desc', v: game.desc.replace(/\n+/g, ' ⏎ ').slice(0, 200) + (game.desc.length > 200 ? '…' : '') },
+      { k: 'Color A', v: game.palette[0] },
+      { k: 'Color B', v: game.palette[1] },
+      { k: 'Featured', v: game.featured ? 'yes' : 'no' }
+    ];
+  }
+
+  /* ---------- direct publish: same-site localStorage bridge ----------
+     Tundra Studio and Tundra Games both live at coder386galaxy.github.io,
+     so on that origin the studio can write the store's own keys directly. */
+  const STORE_HOST = 'coder386galaxy.github.io';
+  const STORE_URL = 'https://coder386galaxy.github.io/Tudra-Publishing/';
+
+  function lsRead(k, d) {
+    try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }
+    catch (e) { return d; }
+  }
+
+  function directStatus() {
+    const host = (typeof location !== 'undefined' && location.hostname) || '';
+    return {
+      available: host === STORE_HOST,
+      host: host,
+      storeHost: STORE_HOST,
+      storeUrl: STORE_URL,
+      count: lsRead('tundra_games', []).length
+    };
+  }
+
+  function directPublish(game, news) {
+    const games = lsRead('tundra_games', []);
+    const i = games.findIndex(g => g.id === game.id);
+    if (i >= 0) games[i] = game; else games.push(game);
+    localStorage.setItem('tundra_games', JSON.stringify(games));
+    const n = lsRead('tundra_news', []);
+    n.unshift(news || launchNews(game));
+    localStorage.setItem('tundra_news', JSON.stringify(n));
+    return { count: games.length, updated: i >= 0 };
+  }
+
+  window.StoreKit = {
+    AGES, PLATFORMS, today, fmtDate, money, STORE_HOST, STORE_URL,
+    compressDataURL, fileToDataURL, proceduralArt,
+    validate, buildGameObject, buildPackage, mergeCatalog,
+    launchNews, download, downloadDataURL, copyRows,
+    directStatus, directPublish
+  };
+})();
+
+/* ============================================================
+   TUNDRA STUDIO — app glue.
+   AI = your API key only (js/llm.js). Code = plain editable HTML.
+   ============================================================ */
+(function () {
+  'use strict';
+  const SK = window.StoreKit, LM = window.LLM, TPL = window.Templates, RNR = window.Runner;
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.prototype.slice.call(document.querySelectorAll(s));
+
+  /* ---------- guarded storage ---------- */
+  let mem = {};
+  function lsGet(k, d) {
+    try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }
+    catch (e) { return k in mem ? mem[k] : d; }
+  }
+  function lsSet(k, v) {
+    try { localStorage.setItem(k, JSON.stringify(v)); }
+    catch (e) { mem[k] = v; }
+  }
+
+  const TS = window.TS = {
+    lang: null,
+    mode: 'code',          // 'code' = the Code Room (no AI) · 'ai' = forge workspace with the assistant
+    _aiUsed: false,
+    fields: null,
+    cover: null,
+    shots: [],
+    catalog: null,
+    dirty: false,
+    busy: false,
+    autoRun: false,
+    hint: '',
+    engineCfg: lsGet('tundra_studio_cfg', { base: 'https://api.openai.com/v1', key: '', model: 'gpt-4o-mini' }),
+    projects: lsGet('tundra_studio_projects', [])
+  };
+  TS.lang = lsGet('tundra_studio_lang', 'js');
+  let editor = null;
+
+  function langLabel(id) {
+    const l = RNR.LANGS.find(x => x.id === id) || RNR.LANGS[0];
+    return l;
+  }
+
+  /* ---------- toast + snow ---------- */
+  let toastT = null;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove('on'), 2400);
+  }
+  TS.toast = toast;
+
+  (function snow() {
+    const c = $('#snow'), x = c.getContext('2d');
+    let W, H, flakes = [];
+    function resize() {
+      W = c.width = window.innerWidth; H = c.height = window.innerHeight;
+      flakes = [];
+      for (let i = 0; i < 70; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, s: 0.8 + Math.random() * 2.2, v: 12 + Math.random() * 30, p: Math.random() * 6.28 });
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    (function step() {
+      requestAnimationFrame(step);
+      x.clearRect(0, 0, W, H);
+      x.fillStyle = '#F5FAFF';
+      for (const f of flakes) {
+        f.y += f.v / 60; f.x += Math.sin(f.y / 50 + f.p) * 0.2;
+        if (f.y > H) { f.y = -4; f.x = Math.random() * W; }
+        x.globalAlpha = 0.15 + f.s * 0.13;
+        x.fillRect(f.x, f.y, f.s, f.s);
+      }
+      x.globalAlpha = 1;
+    })();
+  })();
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  /* ---------- views ---------- */
+  TS.go = function (v) {
+    $$('.view').forEach(s => s.classList.toggle('on', s.id === 'view-' + v));
+    // nav lighting: the shared workspace lights Forge (AI mode) or Code Room (code mode)
+    const navKey = v === 'workshop' ? (TS.mode === 'ai' ? 'home' : 'code') : v;
+    $$('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.view === navKey));
+    if (v === 'publish') renderPublish();
+    if (v === 'projects') renderProjects();
+    window.scrollTo(0, 0);
+  };
+
+  /* ---------- code room vs AI dock ---------- */
+  function renderEmpty() {
+    const el = $('#workshopEmpty');
+    if (!el) return;
+    if (TS.mode === 'ai') {
+      el.innerHTML = '<div class="empty">Nothing open — describe a game in the <b>AI assistant</b> and hit Generate, ' +
+        'start a <a href="#" onclick="TS.startTemplate(\'starter\');return false">starter template</a>, ' +
+        'or open a project from <a href="#" onclick="TS.go(\'projects\');return false">Projects</a>.</div>';
+    } else {
+      el.innerHTML = '<div class="empty code-empty">' +
+        '<h3>⌨️ The Code Room</h3>' +
+        '<p>Just you and the code — no AI here. Pick a language in the toolbar, then start a file:</p>' +
+        '<div class="row gap" style="justify-content:center">' +
+        '<button class="btn primary" onclick="TS.startTemplate(\'starter\')">▶ Starter game</button>' +
+        '<button class="btn ghost" onclick="TS.startTemplate(\'empty\')">▢ Empty file</button>' +
+        '<button class="btn ghost" onclick="TS.go(\'projects\')">📂 Open project</button>' +
+        '</div>' +
+        '<p class="fine" style="margin-top:16px">Ctrl+Enter runs · Ctrl+S saves · everything stays in your browser. ' +
+        'Publish to Tundra Games when you’re ready.</p>' +
+        '</div>';
+    }
+  }
+
+  function applyMode() {
+    const g = $('#workshopGrid');
+    if (!g) return;
+    g.classList.toggle('mode-ai', TS.mode === 'ai');
+    g.classList.toggle('mode-code', TS.mode !== 'ai');
+    const h2 = $('#heroAI2');
+    if (h2) h2.style.display = editor ? '' : 'none';
+    renderEmpty();
+  }
+
+  TS.openCode = function () {
+    TS.mode = 'code';
+    applyMode();
+    TS.go('workshop');
+  };
+
+  TS.openAI = function () {
+    if (!editor) { TS.go('home'); toast('Generate or open a file first'); return; }
+    TS.mode = 'ai';
+    applyMode();
+    TS.go('workshop');
+  };
+
+  TS.closeAI = function () {
+    TS.mode = 'code';
+    applyMode();
+    toast('AI assistant closed — the Code Room is AI-free');
+  };
+
+  /* ---------- home ---------- */
+  const IDEAS = [
+    'A cozy flappy game where a little glacier spirit flies through ice caves, easy and chill',
+    'A fast neon space shooter against asteroid swarms',
+    'A relaxing endless snake in a candy world',
+    'A spooky memory match with ghosts and gravestones',
+    'A brutal dodge game with falling embers over a volcano',
+    'A cheerful catcher: grab falling fruit, avoid grumpy crows'
+  ];
+  TS.surprise = function () {
+    $('#heroPrompt').value = IDEAS[Math.floor(Math.random() * IDEAS.length)];
+  };
+  function renderIdeas() {
+    const box = $('#ideaChips');
+    const words = ['cozy', 'space shooter', 'puzzle', 'endless', 'two-button', 'high-score'];
+    box.innerHTML = words.map(w => '<button class="chip">' + esc(w) + '</button>').join('');
+    box.querySelectorAll('.chip').forEach(ch => ch.onclick = () => {
+      const p = $('#heroPrompt');
+      p.value = (p.value ? p.value.replace(/\s*$/, ' ') : '') + ch.textContent;
+      p.focus();
+    });
+  }
+
+  /* ---------- language ---------- */
+  function renderLangChips() {
+    const box = $('#langChips');
+    box.innerHTML = RNR.LANGS.map(l =>
+      '<button class="chip ' + (TS.lang === l.id ? 'on' : '') + '" data-lang="' + l.id + '">' + esc(l.label) + '</button>'
+    ).join('');
+    box.querySelectorAll('.chip').forEach(ch => ch.onclick = () => TS.setLang(ch.dataset.lang));
+    const sel = $('#langSel');
+    if (sel) {
+      sel.innerHTML = RNR.LANGS.map(l => '<option value="' + l.id + '"' + (TS.lang === l.id ? ' selected' : '') + '>' + esc(l.label) + '</option>').join('');
+    }
+    const fl = $('#fileLabel');
+    if (fl) fl.textContent = langLabel(TS.lang).file;
+    const ln = $('#langNote');
+    if (ln) ln.textContent = langLabel(TS.lang).note;
+    renderLangChipsOn();
+  }
+  function renderLangChipsOn() {
+    const box = $('#langChips');
+    if (!box) return;
+    box.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('on', ch.dataset.lang === TS.lang));
+  }
+
+  TS.setLang = function (v) {
+    TS.lang = RNR.LANGS.some(l => l.id === v) ? v : 'js';
+    lsSet('tundra_studio_lang', TS.lang);
+    if (editor) editor.setLanguage(TS.lang);
+    renderLangChips();
+    if (editor) toast('Language: ' + langLabel(TS.lang).label + ' — source untouched; generate or paste ' + langLabel(TS.lang).label + ' code to run');
+  };
+
+  /* wrap the source into a runnable HTML build (js = the document itself) */
+  function buildGame() {
+    if (!editor) return '';
+    const code = editor.getValue();
+    if (TS.lang === 'js') return code;
+    const meta = LM.extractMeta(code) || {
+      title: (TS.fields && TS.fields.title) || 'Game',
+      blurb: (TS.fields && TS.fields.blurb) || '',
+      hint: TS.hint || '',
+      palette: (TS.fields && TS.fields.palette) || ['#1B1F23', '#0a0d10']
+    };
+    return RNR.wrap(TS.lang, code, meta);
+  }
+  TS.buildGame = buildGame;
+
+  /* ---------- engine status ---------- */
+  function engineLabel() {
+    const c = TS.engineCfg;
+    if (c && c.key) return 'Engine: ' + esc(c.model || 'model') + ' via ' + esc((c.base || '').replace(/^https?:\/\//, '').replace(/\/+$/, '')) + ' · key ✓';
+    return 'Engine: not configured — AI needs your API key (<button class="linklike" onclick="TS.openSettings()">⚙ add one</button>)';
+  }
+  function refreshEngine() {
+    $('#engineLine').innerHTML = engineLabel();
+    $('#heroEngineLine').innerHTML = engineLabel();
+    $('#engineBtn').textContent = TS.engineCfg && TS.engineCfg.key ? '⚙ ' + (TS.engineCfg.model || 'Engine') : '⚙ Engine';
+  }
+
+  function requireKey() {
+    if (TS.engineCfg && TS.engineCfg.key) return true;
+    toast('AI needs your API key — add one in ⚙ Engine');
+    TS.openSettings();
+    return false;
+  }
+
+  /* ---------- AI activity log ---------- */
+  function logLine(html) {
+    const el = $('#aiLog');
+    const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    el.innerHTML += '\n<span class="dim">' + t + '</span> ' + html;
+    while (el.innerHTML.length > 6000) el.innerHTML = el.innerHTML.slice(el.innerHTML.indexOf('\n') + 1);
+    el.scrollTop = el.scrollHeight;
+  }
+  function logClear(msg) { $('#aiLog').innerHTML = '<span class="dim">' + esc(msg) + '</span>'; }
+
+  function setBusy(b) {
+    TS.busy = b;
+    $('#aiGoBtn').disabled = b;
+    $('#aiModBtn').disabled = b;
+  }
+
+  /* ---------- project state ---------- */
+  function blankFields(title) {
+    return {
+      title: title || 'Untitled',
+      studio: 'Tundra Publishing',
+      price: 0,
+      date: SK.today(),
+      age: 'E',
+      tags: ['Indie', 'Arcade'],
+      platforms: ['Windows', 'Mac', 'Linux'],
+      featured: true,
+      blurb: '',
+      desc: '',
+      image: null,
+      screens: [],
+      palette: ['#1B1F23', '#4FB3E8']
+    };
+  }
+
+  function applyMeta(meta) {
+    const f = TS.fields || blankFields();
+    if (meta) {
+      if (meta.title) f.title = String(meta.title).slice(0, 60);
+      if (meta.blurb) f.blurb = String(meta.blurb).slice(0, 160);
+      if (meta.desc) f.desc = String(meta.desc);
+      if (Array.isArray(meta.tags) && meta.tags.length) f.tags = meta.tags.map(String).slice(0, 6);
+      if (meta.age) f.age = String(meta.age);
+      if (isFinite(meta.price)) f.price = Math.max(0, +meta.price);
+      if (Array.isArray(meta.palette) && meta.palette.length >= 2) f.palette = [String(meta.palette[0]), String(meta.palette[1])];
+      if (meta.hint) TS.hint = String(meta.hint);
+    } else {
+      const t = LM.titleOf(editor.getValue());
+      if (t) f.title = t.slice(0, 60);
+    }
+    TS.fields = f;
+    $('#ctrlHint').textContent = 'Controls: ' + (TS.hint || 'see in-game instructions');
+    $('#buildTitle').innerHTML = esc(f.title) + '<small id="dirtyFlag">' + (TS.dirty ? ' · modified' : '') + '</small>';
+    renderKitForm();
+    renderMedia();
+  }
+
+  function showWorkshopState() {
+    const hasBuild = !!editor;
+    $('#workshopEmpty').style.display = hasBuild ? 'none' : '';
+    $('#workshopGrid').style.display = hasBuild ? '' : 'none';
+  }
+
+  /* ---------- load code into workshop ---------- */
+  function loadCode(code, meta, titleHint) {
+    TS.go('workshop');
+    if (!editor) {
+      editor = window.TundraEditor.mount({
+        ta: $('#codeArea'),
+        gutter: $('#edGutter'),
+        hl: $('#edHl'),
+        onRun: TS.run,
+        onSave: TS.saveProject,
+        onChange: function () {
+          TS.dirty = true;
+          const df = $('#dirtyFlag');
+          if (df) df.textContent = ' · modified';
+          if (TS.autoRun) {
+            clearTimeout(TS._runT);
+            TS._runT = setTimeout(TS.run, 700);
+          }
+        }
+      });
+    }
+    editor.setLanguage(TS.lang);
+    renderLangChips();
+    TS.dirty = false;
+    TS.hint = '';
+    editor.setValue(code);
+    TS.dirty = false;
+    TS.fields = TS.fields || blankFields(titleHint);
+    showWorkshopState();
+    applyMode();
+    TS.run();
+    const metaObj = meta || LM.extractMeta(code);
+    applyMeta(metaObj);
+  }
+  TS.loadCode = loadCode;
+
+  TS.startTemplate = function (kind) {
+    const t = TPL.get(TS.lang, kind === 'empty' ? 'empty' : 'starter');
+    TS.fields = null; TS.cover = null; TS.shots = [];
+    TS.mode = 'code';
+    TS._aiUsed = false;
+    loadCode(t.code, null, TS.lang === 'js' ? (kind === 'empty' ? 'My Game' : 'Starfall Catch') : 'Starfall Catch');
+    toast('Opened “' + t.label + '” — the Code Room, no AI');
+  };
+  TS.newFrom = function (id) { TS.startTemplate(id === 'empty' ? 'empty' : 'starter'); };
+
+  TS.run = function () {
+    if (!editor) return;
+    $('#gameFrame').srcdoc = buildGame();
+  };
+
+  TS.setAutoRun = function (v) { TS.autoRun = !!v; };
+
+  /* ---------- AI: generate & modify (API key only) ---------- */
+  TS.aiGenerate = function (fromHome) {
+    const prompt = (fromHome ? $('#heroPrompt').value : $('#aiPrompt').value || $('#heroPrompt').value || '').trim();
+    if (!prompt) { toast('Describe your game first ✍️'); return; }
+    if (!requireKey()) return;
+    $('#aiPrompt').value = prompt;
+    TS.go('workshop');
+    showWorkshopState();
+    setBusy(true);
+    logClear('generating…');
+    logLine('<b class="hot">POST</b> ' + esc((TS.engineCfg.base || '').replace(/\/+$/, '')) + '/chat/completions');
+    logLine('model: <b class="hot">' + esc(TS.engineCfg.model || 'model') + '</b> · prompt: ' + esc(prompt.slice(0, 60)) + (prompt.length > 60 ? '…' : ''));
+    LM.generate(TS.engineCfg, prompt, TS.lang).then(res => {
+      setBusy(false);
+      if (!res.doc || res.doc.length < 80) throw new Error('Model returned no document');
+      TS.mode = 'ai';
+      TS._aiUsed = true;
+      loadCode(res.doc, res.meta);
+      TS.dirty = false;
+      const df = $('#dirtyFlag'); if (df) df.textContent = '';
+      logLine('✓ received ' + res.doc.length + ' chars · building preview…');
+      setTimeout(() => {
+        TS.captureAll(true);
+        logLine('✓ done — playtest, edit the code, or apply changes with AI');
+      }, 500);
+      toast('⚡ Game generated — now make it yours');
+    }).catch(e => {
+      setBusy(false);
+      logLine('✖ ' + esc(e && e.message || e));
+      toast('AI error — see Activity log');
+    });
+  };
+
+  TS.aiModify = function () {
+    const prompt = $('#aiPrompt').value.trim();
+    if (!prompt) { toast('Describe the change first ✍️'); return; }
+    if (!requireKey()) return;
+    if (!editor) { toast('Open or generate a game first'); return; }
+    setBusy(true);
+    logClear('applying change…');
+    logLine('<b class="hot">POST</b> /chat/completions · revise: ' + esc(prompt.slice(0, 60)) + (prompt.length > 60 ? '…' : ''));
+    LM.modify(TS.engineCfg, prompt, editor.getValue(), TS.lang).then(res => {
+      setBusy(false);
+      if (!res.doc || res.doc.length < 80) throw new Error('Model returned no document');
+      TS._aiUsed = true;
+      editor.setValue(res.doc);
+      TS.dirty = false;
+      const df = $('#dirtyFlag'); if (df) df.textContent = '';
+      TS.run();
+      if (res.meta) applyMeta(res.meta);
+      logLine('✓ applied — ' + res.doc.length + ' chars');
+      toast('AI updated the code');
+    }).catch(e => {
+      setBusy(false);
+      logLine('✖ ' + esc(e && e.message || e));
+      toast('AI error — see Activity log');
+    });
+  };
+
+  TS.quickFix = function (text) {
+    $('#aiPrompt').value = text;
+    TS.aiModify();
+  };
+
+  /* ---------- capture bridge + canvas grab ---------- */
+  function postToGame(msg) {
+    const f = $('#gameFrame');
+    if (f && f.contentWindow) f.contentWindow.postMessage(msg, '*');
+  }
+
+  function pingBridge() {
+    return new Promise(res => {
+      const ts = Date.now() + Math.random();
+      TS._pongs = TS._pongs || {};
+      TS._pongs[ts] = ok => res(ok);
+      postToGame({ src: 'tundra-studio', act: 'ping', ts: ts });
+      setTimeout(() => { if (TS._pongs[ts]) { delete TS._pongs[ts]; res(false); } }, 700);
+    });
+  }
+
+  function requestShot(state) {
+    return new Promise(res => {
+      const ts = Date.now() + Math.random();
+      TS._shots = TS._shots || {};
+      TS._shots[ts] = d => res(d);
+      postToGame({ src: 'tundra-studio', act: 'shot', state: state, ts: ts });
+      setTimeout(() => { if (TS._shots[ts]) { delete TS._shots[ts]; res(null); } }, 1800);
+    });
+  }
+
+  window.addEventListener('message', function (ev) {
+    const m = ev.data || {};
+    if (m.src !== 'tundra-game') return;
+    const f = $('#gameFrame');
+    if (f && ev.source !== f.contentWindow) return;
+    if (m.act === 'pong' && m.ts && TS._pongs && TS._pongs[m.ts]) {
+      const cb = TS._pongs[m.ts]; delete TS._pongs[m.ts]; cb(true);
+    }
+    if (m.act === 'shot' && m.ts && TS._shots && TS._shots[m.ts]) {
+      const cb = TS._shots[m.ts]; delete TS._shots[m.ts]; cb(m.data || null);
+    }
+    if (m.act === 'ready' && m.hint) {
+      TS.hint = m.hint;
+      $('#ctrlHint').textContent = 'Controls: ' + m.hint;
+    }
+  });
+
+  function grabCanvasFrame() {
+    try {
+      const d = $('#gameFrame').contentDocument;
+      if (!d) return null;
+      const cs = d.getElementsByTagName('canvas');
+      let c = null;
+      for (let i = 0; i < cs.length; i++) {
+        if (!c || (cs[i].width * cs[i].height) > (c.width * c.height)) c = cs[i];
+      }
+      if (!c || !c.width) return null;
+      return c.toDataURL('image/jpeg', 0.9);
+    } catch (e) { return null; }
+  }
+
+  function pushShot(url) {
+    TS.shots.push(url);
+    if (TS.shots.length > 4) TS.shots.shift();
+    TS.fields.screens = TS.shots.slice();
+  }
+
+  TS.captureShot = function () {
+    if (!editor) return toast('Nothing running');
+    const grab = grabCanvasFrame();
+    (grab
+      ? SK.compressDataURL(grab, 640, 360, 0.82)
+      : requestShot('play').then(d => d ? SK.compressDataURL(d, 640, 360, 0.82) : SK.proceduralArt(TS.fields.title + ' · shot ' + (TS.shots.length + 1), TS.fields.palette, 640, 360, 10 + TS.shots.length, false))
+    ).then(u => {
+      pushShot(u);
+      renderMedia();
+      toast('📸 Screenshot added (' + TS.shots.length + '/4)');
+    });
+  };
+
+  TS.captureCover = function () {
+    if (!editor) return;
+    const grab = grabCanvasFrame();
+    (grab
+      ? SK.compressDataURL(grab, 640, 360, 0.86)
+      : requestShot('title').then(d => d ? SK.compressDataURL(d, 640, 360, 0.86) : SK.proceduralArt(TS.fields.title, TS.fields.palette, 640, 360, 1, true))
+    ).then(u => {
+      TS.cover = u;
+      TS.fields.image = u;
+      renderMedia();
+      toast('📸 Cover captured');
+    });
+  };
+
+  TS.captureAll = function (quiet) {
+    if (!editor) return;
+    const proc = (seed, title) => SK.proceduralArt(TS.fields.title + (title ? '' : ' · shot ' + seed), TS.fields.palette, 640, 360, seed, !!title);
+    pingBridge().then(ok => {
+      if (ok) {
+        return Promise.all([
+          requestShot('title').then(d => d ? SK.compressDataURL(d, 640, 360, 0.86) : proc(1, true)),
+          requestShot('play').then(d => d ? SK.compressDataURL(d, 640, 360, 0.82) : proc(2, false)),
+          requestShot('over').then(d => d ? SK.compressDataURL(d, 640, 360, 0.82) : proc(3, false))
+        ]).then(us => ({ cover: us[0], shots: [us[1], us[2], us[0]] }));
+      }
+      const grab = grabCanvasFrame();
+      return (grab ? SK.compressDataURL(grab, 640, 360, 0.86) : Promise.resolve(proc(1, true)))
+        .then(cover => ({ cover: cover, shots: [cover, proc(2, false), proc(3, false)] }));
+    }).then(r => {
+      TS.cover = r.cover;
+      TS.fields.image = r.cover;
+      TS.shots = r.shots.slice(0, 3);
+      TS.fields.screens = TS.shots.slice();
+      renderMedia();
+      if (!quiet) toast('✨ Cover + ' + TS.shots.length + ' screenshots ready');
+    });
+  };
+
+  TS.uploadCover = function (inp) {
+    const f = inp.files[0]; if (!f) return;
+    SK.fileToDataURL(f).then(d => SK.compressDataURL(d, 640, 360, 0.86)).then(j => {
+      TS.cover = j; TS.fields.image = j; renderMedia(); toast('Cover updated');
+    });
+    inp.value = '';
+  };
+  TS.uploadShots = function (inp) {
+    const fs = Array.prototype.slice.call(inp.files || []);
+    Promise.all(fs.map(f => SK.fileToDataURL(f).then(d => SK.compressDataURL(d, 640, 360, 0.82)))).then(js => {
+      TS.shots = TS.shots.concat(js).slice(0, 4);
+      TS.fields.screens = TS.shots.slice();
+      renderMedia();
+      toast('Screenshots added');
+    });
+    inp.value = '';
+  };
+
+  function renderMedia() {
+    const cb = $('#coverBox');
+    cb.innerHTML = TS.cover ? '<img src="' + TS.cover + '" alt="cover">' : '<div class="empty">No cover yet</div>';
+    const sg = $('#shotGrid');
+    sg.innerHTML = TS.shots.map((s, i) =>
+      '<div class="shot"><img src="' + s + '" alt=""><button class="del" data-i="' + i + '">✕</button></div>'
+    ).join('') || '<div class="empty" style="grid-column:1/-1">No screenshots yet</div>';
+    $('#shotCount').textContent = TS.shots.length ? '(' + TS.shots.length + ')' : '';
+    sg.querySelectorAll('.del').forEach(b => b.onclick = () => {
+      TS.shots.splice(+b.dataset.i, 1);
+      TS.fields.screens = TS.shots.slice();
+      renderMedia();
+    });
+  }
+
+  /* ---------- workshop tabs ---------- */
+  TS.wsTab = function (t) {
+    $$('#wsTabs .tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    $$('.tab-pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + t));
+  };
+
+  /* ---------- store kit form ---------- */
+  function renderKitForm() {
+    const f = TS.fields;
+    $('#kitForm').innerHTML =
+      '<label>Title<input id="kTitle" class="inp" value="' + esc(f.title) + '"></label>' +
+      '<label>Developer / Studio<input id="kStudio" class="inp" value="' + esc(f.studio) + '"></label>' +
+      '<div class="grid2">' +
+      '<label>Price USD (0 = free)<input id="kPrice" class="inp" type="number" min="0" step="0.01" value="' + f.price + '"></label>' +
+      '<label>Release date<input id="kDate" class="inp" type="date" value="' + f.date + '"></label>' +
+      '</div>' +
+      '<div class="grid2">' +
+      '<label>Age rating<select id="kAge">' + SK.AGES.map(a => '<option value="' + a + '"' + (a === f.age ? ' selected' : '') + '>' + (a || '(none)') + '</option>').join('') + '</select></label>' +
+      '<label>Tags <span class="counter" id="tagCount"></span><input id="kTags" class="inp" value="' + esc(f.tags.join(', ')) + '"></label>' +
+      '</div>' +
+      '<label>Platforms<div class="checks">' + SK.PLATFORMS.map(p =>
+        '<label><input type="checkbox" class="kPlat" value="' + p + '"' + (f.platforms.indexOf(p) >= 0 ? ' checked' : '') + '> ' + p + '</label>').join('') + '</div></label>' +
+      '<label>Short description <span class="counter" id="blurbCount"></span><input id="kBlurb" class="inp" maxlength="160" value="' + esc(f.blurb) + '"></label>' +
+      '<label>Full description<textarea id="kDesc" rows="5">' + esc(f.desc) + '</textarea></label>' +
+      '<div class="grid2">' +
+      '<label>Fallback color A<input id="kColA" type="color" value="' + esc(/^#[0-9a-fA-F]{6}$/.test(f.palette[0]) ? f.palette[0] : '#1B1F23') + '"></label>' +
+      '<label>Fallback color B<input id="kColB" type="color" value="' + esc(/^#[0-9a-fA-F]{6}$/.test(f.palette[1]) ? f.palette[1] : '#4FB3E8') + '"></label>' +
+      '</div>' +
+      '<label style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0"><input id="kFeat" type="checkbox"' + (f.featured ? ' checked' : '') + '> Feature on store front</label>';
+
+    const sync = () => {
+      f.title = $('#kTitle').value.trim();
+      f.studio = $('#kStudio').value.trim() || 'Tundra Publishing';
+      f.price = Math.max(0, +$('#kPrice').value || 0);
+      f.date = $('#kDate').value || SK.today();
+      f.age = $('#kAge').value;
+      f.tags = $('#kTags').value.split(',').map(t => t.trim()).filter(Boolean);
+      f.platforms = $$('.kPlat:checked').map(c => c.value);
+      f.blurb = $('#kBlurb').value.slice(0, 160);
+      f.desc = $('#kDesc').value;
+      f.palette = [$('#kColA').value, $('#kColB').value];
+      f.featured = $('#kFeat').checked;
+      $('#blurbCount').textContent = f.blurb.length + '/160';
+      $('#tagCount').textContent = f.tags.length + ' tags';
+    };
+    ['#kTitle', '#kStudio', '#kPrice', '#kDate', '#kAge', '#kTags', '#kBlurb', '#kDesc', '#kColA', '#kColB'].forEach(id => {
+      const el = $(id); if (el) el.addEventListener('input', sync);
+    });
+    $$('.kPlat').forEach(c => c.addEventListener('change', sync));
+    $('#kFeat').addEventListener('change', sync);
+    sync();
+  }
+
+  /* ---------- download ---------- */
+  function downloadText(name, text) {
+    const blob = new Blob([text], { type: name.endsWith('.html') ? 'text/html' : 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  }
+  TS.downloadGame = function () {
+    if (!editor) return toast('Nothing to download yet');
+    const slug = ((TS.fields && TS.fields.title) || 'game').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const L = langLabel(TS.lang);
+    if (TS.lang === 'js') {
+      downloadText(slug + '.html', editor.getValue());
+      toast('⬇ ' + slug + '.html');
+    } else {
+      downloadText(L.file.replace('game', slug) , editor.getValue());
+      setTimeout(() => downloadText(slug + '-build.html', buildGame()), 300);
+      toast('⬇ source + build');
+    }
+  };
+
+  /* ---------- projects ---------- */
+  TS.saveProject = function () {
+    if (!editor || !TS.fields) return toast('Nothing to save');
+    const p = {
+      pid: 'p' + Date.now().toString(36),
+      title: TS.fields.title,
+      when: new Date().toISOString(),
+      lang: TS.lang,
+      ai: TS._aiUsed,
+      code: editor.getValue(),
+      fields: TS.fields,
+      cover: TS.cover,
+      shots: TS.shots.slice()
+    };
+    const i = TS.projects.findIndex(x => x.title === p.title);
+    if (i >= 0) { p.pid = TS.projects[i].pid; TS.projects[i] = p; } else TS.projects.unshift(p);
+    TS.projects = TS.projects.slice(0, 24);
+    lsSet('tundra_studio_projects', TS.projects);
+    TS.dirty = false;
+    const df = $('#dirtyFlag'); if (df) df.textContent = '';
+    toast('💾 Project saved');
+    renderProjects();
+  };
+
+  function renderProjects() {
+    const g = $('#projGrid');
+    if (!TS.projects.length) {
+      g.innerHTML = '<div class="empty">No projects saved yet. Generate a game or start a template, then hit Save.</div>';
+      return;
+    }
+    g.innerHTML = TS.projects.map(p =>
+      '<div class="panel proj-card">' +
+      '<img src="' + (p.cover || SK.proceduralArt(p.title, (p.fields && p.fields.palette) || ['#1B1F23', '#4FB3E8'], 320, 180, 1, true)) + '" alt="">' +
+      '<div class="proj-body"><b>' + esc(p.title) + '</b><small>' + esc((RNR.LANGS.find(l => l.id === (p.lang || 'js')) || RNR.LANGS[0]).label) + ' · ' + new Date(p.when).toLocaleDateString() + ' · ' + Math.round((p.code || '').length / 1024) + ' KB</small>' +
+      '<div class="proj-actions">' +
+      '<button class="btn primary sm" data-open="' + p.pid + '">Open</button>' +
+      '<button class="btn ghost sm" data-exp="' + p.pid + '">Export JSON</button>' +
+      '<button class="btn ghost sm" data-del="' + p.pid + '">Delete</button>' +
+      '</div></div></div>'
+    ).join('');
+    g.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openProject(b.dataset.open));
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+      TS.projects = TS.projects.filter(p => p.pid !== b.dataset.del);
+      lsSet('tundra_studio_projects', TS.projects);
+      renderProjects();
+    });
+    g.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => {
+      const p = TS.projects.find(x => x.pid === b.dataset.exp);
+      SK.download('tundra-studio-project-' + p.pid + '.json', JSON.stringify(p, null, 2));
+    });
+  }
+
+  function openProject(pid) {
+    const p = TS.projects.find(x => x.pid === pid);
+    if (!p) return;
+    TS.lang = p.lang || 'js';
+    lsSet('tundra_studio_lang', TS.lang);
+    TS.mode = p.ai ? 'ai' : 'code';
+    TS._aiUsed = !!p.ai;
+    TS.fields = p.fields || blankFields(p.title);
+    TS.cover = p.cover || null;
+    TS.shots = (p.shots || []).slice();
+    TS.fields.screens = TS.shots.slice();
+    TS.fields.image = TS.cover;
+    loadCode(p.code, null, p.title);
+    logClear('project opened · ' + p.title + ' (' + langLabel(TS.lang).label + ')');
+    toast('Opened “' + p.title + '”');
+  }
+
+  /* ---------- publish ---------- */
+  function currentGame() {
+    if (!editor || !TS.fields) { toast('Forge a game first'); return null; }
+    TS.fields.screens = TS.shots.slice();
+    TS.fields.image = TS.cover;
+    const errs = SK.validate(TS.fields);
+    if (errs.length) { toast(errs[0]); return null; }
+    return SK.buildGameObject(TS.fields, buildGame());
+  }
+
+  TS.exportPackage = function () {
+    const g = currentGame();
+    if (!g) return;
+    SK.download('tundra-publish-' + SK.today() + '.json', JSON.stringify(SK.buildPackage(g), null, 2));
+    toast('⬇ Publish package exported');
+  };
+
+  TS.loadCatalog = function (inp) {
+    const f = inp.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        if (!Array.isArray(d.games)) throw new Error('no games[] array');
+        TS.catalog = d;
+        $('#mergeStatus').innerHTML = '✔ Catalog loaded: <b>' + d.games.length + '</b> title(s), <b>' + (d.news || []).length + '</b> news post(s). Your new title will be ' +
+          (d.games.some(x => TS.fields && x.id === TS.fields.id) ? 'updated in place.' : 'appended.');
+        $('#mergeExportBtn').style.display = '';
+        toast('Catalog loaded');
+      } catch (e) {
+        TS.catalog = null;
+        $('#mergeStatus').innerHTML = '✖ Not a Tundra Games catalog export (' + esc(e.message) + ').';
+        $('#mergeExportBtn').style.display = 'none';
+        toast('Invalid catalog file');
+      }
+    };
+    r.readAsText(f);
+    inp.value = '';
+  };
+
+  TS.exportMerged = function () {
+    const g = currentGame();
+    if (!g || !TS.catalog) return;
+    SK.download('tundra-games-' + SK.today() + '.json', JSON.stringify(SK.mergeCatalog(TS.catalog, g, SK.launchNews(g)), null, 2));
+    toast('⬇ Merged catalog exported — Restore it in Tundra Games');
+  };
+
+  /* ---------- direct publish (same-site bridge to Tundra Games) ---------- */
+  TS.directRefresh = function () {
+    const el = $('#directStatus');
+    if (!el) return;
+    const s = SK.directStatus();
+    if (s.available) {
+      el.innerHTML = '✅ <b>Same-site connection active</b> — this browser\'s Tundra Games catalog holds <b>' +
+        s.count + '</b> title(s). Direct publish writes to it instantly.';
+      $('#directBtn').disabled = !!(TS.fields && editor) ? false : true;
+    } else {
+      el.innerHTML = '🔌 Studio is running on <b>' + esc(s.host || 'a local file') + '</b> — direct publish activates once Tundra Studio is deployed at <b>' + s.storeHost + '</b> (the same site as the store, e.g. via GitHub Pages). The export/merge/form paths below work everywhere.';
+      $('#directBtn').disabled = true;
+    }
+  };
+
+  TS.directPublish = function () {
+    const g = currentGame();
+    if (!g) return;
+    const s = SK.directStatus();
+    if (!s.available) return toast('Direct publish needs the same site as Tundra Games (see status)');
+    try {
+      const r = SK.directPublish(g, SK.launchNews(g));
+      TS.directRefresh();
+      toast('⚡ “' + g.title + '” ' + (r.updated ? 'updated' : 'published') + ' — open Tundra Games!');
+    } catch (e) {
+      toast('Could not write the store catalog: ' + (e && e.message || e));
+    }
+  };
+
+  TS.downloadMediaFiles = function () {
+    const slug = ((TS.fields && TS.fields.title) || 'game').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (TS.cover) SK.downloadDataURL(slug + '-cover.jpg', TS.cover);
+    TS.shots.forEach((s, i) => setTimeout(() => SK.downloadDataURL(slug + '-shot-' + (i + 1) + '.jpg', s), 350 * (i + 1)));
+    toast('⬇ Media files downloading');
+  };
+
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(() => toast('Copied ✓'), () => fallbackCopy(t));
+    } else fallbackCopy(t);
+    function fallbackCopy(s) {
+      const ta = document.createElement('textarea');
+      ta.value = s;
+      ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); toast('Copied ✓'); } catch (e) { toast('Copy failed'); }
+      ta.remove();
+    }
+  }
+  TS.copyText = copyText;
+
+  function renderPublish() {
+    if (!TS.fields || !editor) {
+      $('#storePreview').innerHTML = '<div class="empty">Build a game first — then its storefront preview appears here.</div>';
+      $('#copyList').innerHTML = '<div class="empty">Nothing to copy yet.</div>';
+      TS.directRefresh();
+      return;
+    }
+    TS.fields.screens = TS.shots.slice();
+    TS.fields.image = TS.cover;
+    const g = SK.buildGameObject(TS.fields, null);
+    $('#copyList').innerHTML = SK.copyRows(g).map((r, i) =>
+      '<div class="copy-item"><span class="k">' + esc(r.k) + '</span><span class="v">' + esc(r.v) + '</span><button data-copy="' + i + '">copy</button></div>'
+    ).join('');
+    $$('#copyList [data-copy]').forEach(b => b.onclick = () => copyText(SK.copyRows(g)[+b.dataset.copy].v));
+
+    const priceHTML = g.price === 0
+      ? '<span class="sp-price free">Free</span>'
+      : '<span class="sp-price">' + SK.money(g.price) + '</span>';
+    const img = g.image || SK.proceduralArt(g.title, g.palette, 640, 360, 1, true);
+    $('#storePreview').innerHTML =
+      '<div class="sp-card"><div class="sp-thumb"><img src="' + img + '" alt=""></div>' +
+      '<div class="sp-meta"><b>' + esc(g.title) + '</b><small>' + esc(g.studio) + '</small>' +
+      '<div class="sp-bottom"><span class="sp-rating">No reviews · ' + esc(g.platforms.map(p => p[0]).join('')) + '</span>' + priceHTML + '</div></div></div>' +
+      '<div class="sp-detail">' +
+      '<h4>' + esc(g.title) + '</h4>' +
+      '<div class="sp-tags">' + g.tags.map(t => '<span class="sp-tag">' + esc(t) + '</span>').join('') + '</div>' +
+      '<div class="sp-kv">' +
+      '<span>Developer</span><b>' + esc(g.studio) + '</b>' +
+      '<span>Publisher</span><b>Tundra Publishing</b>' +
+      '<span>Release</span><b>' + SK.fmtDate(g.date) + '</b>' +
+      '<span>Platforms</span><b>' + esc(g.platforms.join(', ')) + '</b>' +
+      (g.age ? '<span>Rating</span><b>' + esc(g.age) + '</b>' : '') +
+      '<span>Reviews</span><b style="color:var(--arctic)">No reviews yet</b>' +
+      '</div>' +
+      '<div class="sp-buy">' + priceHTML +
+      (g.price === 0 ? '<button class="btn primary sm">Add to Library</button>' : '<button class="btn primary sm">Add to Cart</button>') +
+      '<button class="btn ghost sm">♡ Wishlist</button></div>' +
+      '<p class="sp-desc" style="margin-top:12px">' + esc(g.desc.slice(0, 260)) + (g.desc.length > 260 ? '…' : '') + '</p>' +
+      '<div class="sp-shots">' + (g.screens || []).map(s => '<img src="' + s + '" alt="">').join('') + '</div>' +
+      '</div>';
+    TS.directRefresh();
+  }
+
+  /* ---------- settings (API key only) ---------- */
+  TS.openSettings = function () {
+    $('#llmBase').value = TS.engineCfg.base || 'https://api.openai.com/v1';
+    $('#llmKey').value = TS.engineCfg.key || '';
+    $('#llmModel').value = TS.engineCfg.model || 'gpt-4o-mini';
+    $('#settingsModal').classList.add('on');
+  };
+  TS.closeSettings = function () { $('#settingsModal').classList.remove('on'); };
+  TS.saveSettings = function () {
+    TS.engineCfg = {
+      base: $('#llmBase').value.trim() || 'https://api.openai.com/v1',
+      key: $('#llmKey').value.trim(),
+      model: $('#llmModel').value.trim() || 'gpt-4o-mini'
+    };
+    lsSet('tundra_studio_cfg', TS.engineCfg);
+    refreshEngine();
+    TS.closeSettings();
+    toast(TS.engineCfg.key ? 'Engine saved — AI is ready' : 'Engine saved (no key — AI disabled)');
+  };
+  TS.testEngine = function () {
+    LM.test({ base: $('#llmBase').value.trim(), key: $('#llmKey').value.trim() })
+      .then(() => toast('✓ Connection OK'))
+      .catch(e => toast('✖ ' + (e && e.message || e)));
+  };
+
+  /* ---------- drag & drop merge zone ---------- */
+  const dz = $('#dropCatalog');
+  if (dz) {
+    ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+    dz.addEventListener('drop', e => {
+      const f = e.dataTransfer.files[0];
+      if (f) TS.loadCatalog({ files: [f], value: '' });
+    });
+  }
+
+  /* ---------- boot ---------- */
+  renderIdeas();
+  renderLangChips();
+  renderProjects();
+  refreshEngine();
+  showWorkshopState();
+  applyMode();
+})();
+
+</script></body>
+</html>
