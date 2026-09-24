@@ -753,7 +753,7 @@
       '#status.bad{color:#ff8a8a;border:1px solid rgba(255,138,138,.4)}',
       '</style></head><body>',
       '<canvas id="cv"></canvas>',
-      '<div id="status">' + escScript(statusMsg) + '</div>',
+      '<div id="status"' + (statusMsg ? '' : ' style="display:none"') + '>' + escScript(statusMsg) + '</div>',
       cdn ? '<scr' + 'ipt src="' + cdn.src + '"><' + '/scr' + 'ipt>' : '',
       '<scr' + 'ipt>',
       escScript(main),

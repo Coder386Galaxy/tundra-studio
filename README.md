@@ -61,14 +61,17 @@ the store-kit Title field, the metadata comment or Frost's `title` line — is w
 |---|---|
 | `index.html` | App shell & views (Forge, Workshop, Publish, Projects, Guide) |
 | `css/studio.css` | Design system (Tundra brand palette) + code editor |
-| `js/llm.js` | **The only AI** — OpenAI-compatible client, per-language prompts, code + `TUNDRA_META` extraction |
-| `js/runner.js` | Language runners: Pyodide / Fengari bootstraps + the `Tundra` game API + build wrapper |
+| `js/llm.js` | **The only AI** — OpenAI-compatible client, per-language prompts (incl. the Frost grammar), code + `TUNDRA_META` extraction |
+| `js/runner.js` | Language runners: the Frost interpreter, Pyodide / Fengari bootstraps, the `Tundra` game API + 10s boot screen + build wrapper |
 | `js/templates.js` | Hand-written starters per language (starter game, empty file) — zero AI |
-| `js/editor.js` | Normal code editor (HTML/JS, Python, Lua highlighting) |
+| `js/editor.js` | Normal code editor (JavaScript, Python, Lua, Frost highlighting) |
 | `js/storekit.js` | Publishing kit — schema-locked to the store's `New Title` form and `Export/Restore` JSON |
-| `js/app.js` | Studio glue: language state, preview, canvas-grab screenshots, store kit, projects |
+| `js/app.js` | Studio glue: language state, title chooser, preview, canvas-grab screenshots, store kit, projects |
 | `Tundra-Studio.html` | Single-file bundle (`python3 bundle.py`) |
+| `store-patch/` | Ready-to-upload Tundra Games store build: **download-only delivery** + Steam-style wallet checkout (`store-patch/HOW-TO-INSTALL.txt`) |
 | `test/smoke.js` | `node test/smoke.js` — parsing, wrap/boot, templates, editor, schema |
+| `test/store-compat.js` | `node test/store-compat.js` — live-store schema compatibility |
+| `test/store-patch.js` | `node test/store-patch.js` — store patch build verification |
 
 ## AI workflow
 
