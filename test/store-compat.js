@@ -67,7 +67,7 @@ function runChecks(src, SK, origin) {
   ok('#game= deep link supported');
 
   // 7) enums
-  if (!src.includes("PLATFORMS=['Windows','Mac','Linux']")) fail('PLATFORMS changed');
+  if (!src.includes("PLATFORMS=['Windows','Mac','Linux','Browser']")) fail('PLATFORMS changed');
   if (!src.includes("AGES=['','E','E10+','T','M','AO']")) fail('AGES changed');
   ok('age/platform enums match');
 

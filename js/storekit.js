@@ -9,7 +9,7 @@
   'use strict';
 
   const AGES = ['', 'E', 'E10+', 'T', 'M', 'AO'];
-  const PLATFORMS = ['Windows', 'Mac', 'Linux'];
+  const PLATFORMS = ['Windows', 'Mac', 'Linux', 'Browser'];
 
   function today() {
     const d = new Date();
@@ -104,7 +104,7 @@
     if (!(fields.price >= 0)) errs.push('Price must be ≥ 0 (0 = free)');
     if (!fields.date || !/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) errs.push('Release date must be YYYY-MM-DD');
     if (AGES.indexOf(fields.age) < 0) errs.push('Age rating must be one of ' + AGES.join('/'));
-    if (!(fields.platforms || []).every(p => PLATFORMS.indexOf(p) >= 0)) errs.push('Platforms must be Windows/Mac/Linux');
+    if (!(fields.platforms || []).every(p => PLATFORMS.indexOf(p) >= 0)) errs.push('Platforms must be Windows/Mac/Linux/Browser');
     return errs;
   }
 
@@ -129,6 +129,8 @@
       discount: 0,
       // extension fields — ignored by the store UI, preserved in catalog JSON
       gameHTML: gameHTML || null,
+      code: gameHTML || null,          // official: in-store player runs g.code via srcdoc
+      codeUpdated: new Date().toISOString(),
       madeWith: 'Tundra Studio'
     };
   }

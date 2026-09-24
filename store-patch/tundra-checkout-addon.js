@@ -137,13 +137,13 @@
 
   var PRESETS = [5, 10, 25, 50, 100];
   var METHODS = [
-    { id: 'tundra', name: 'Tundra Pay', icon: '💳', note: 'Instant — wallet card' },
-    { id: 'frost', name: 'Frost Card', icon: '❄️', note: 'Simulated credit card' },
-    { id: 'snowbank', name: 'Snowbank Transfer', icon: '🏦', note: 'Simulated bank transfer' },
-    { id: 'puffin', name: 'PayPuffin', icon: '🐧', note: 'Simulated e-wallet' }
+    { id: 'visa', name: 'Visa', icon: '💳', note: 'Debit / credit card' },
+    { id: 'mastercard', name: 'Mastercard', icon: '💳', note: 'Debit / credit card' },
+    { id: 'amex', name: 'American Express', icon: '💳', note: 'Credit card' },
+    { id: 'paypal', name: 'PayPal', icon: '🅿️', note: 'Wallet / balance' }
   ];
 
-  var stc = { step: 0, amount: 10, method: 'tundra', pay: { name: '', num: '', exp: '', cvc: '' }, order: null, pendingCart: false };
+  var stc = { step: 0, amount: 10, method: 'visa', pay: { name: '', num: '', exp: '', cvc: '' }, order: null, pendingCart: false };
   var origCheckout = null;
 
   function moneyFmt(n) {
@@ -237,7 +237,7 @@
         '<span style="font-size:22px">' + m.icon + '</span><span><b>' + m.name + '</b><small>' + m.note + '</small></span></div>';
     }
     h += '</div><div class="tchk-field"><label>Name on payment method</label><input id="tchkName" value="' + esc(stc.pay.name) + '" placeholder="Aurora Player" oninput="TundraCheckout.setPay(\'name\',this.value)"></div>';
-    h += '<div class="tchk-field"><label>Number (16 digits — simulated)</label><input id="tchkNum" value="' + esc(stc.pay.num) + '" placeholder="4242 4242 4242 4242" inputmode="numeric" oninput="TundraCheckout.setPay(\'num\',this.value)"></div>';
+    h += '<div class="tchk-field"><label>Card number (16 digits)</label><input id="tchkNum" value="' + esc(stc.pay.num) + '" placeholder="4242 4242 4242 4242" inputmode="numeric" oninput="TundraCheckout.setPay(\'num\',this.value)"></div>';
     h += '<div class="tchk-grid2"><div class="tchk-field" style="margin:0"><label>Expiry</label><input id="tchkExp" value="' + esc(stc.pay.exp) + '" placeholder="MM/YY" oninput="TundraCheckout.setPay(\'exp\',this.value)"></div>';
     h += '<div class="tchk-field" style="margin:0"><label>CVC</label><input id="tchkCvc" value="' + esc(stc.pay.cvc) + '" placeholder="123" inputmode="numeric" oninput="TundraCheckout.setPay(\'cvc\',this.value)"></div></div>';
     h += '<div class="tchk-err" id="tchkErr"></div>';
@@ -270,8 +270,8 @@
 
   function stepProcessing() {
     return head('Processing payment…') + crumbs() +
-      '<div class="tchk-receipt"><div class="big">⏳</div><p>Charging ' + esc(methodById(stc.method).name) + ' · ···· ' + last4() + '…</p>' +
-      '<p style="color:#6c8aa6;font-size:12px">(simulated — nothing real is charged)</p></div>';
+      '<div class="tchk-receipt"><div class="big">⏳</div><p>Authorizing ' + esc(methodById(stc.method).name) + ' · ···· ' + last4() + '…</p>' +
+      '<p style="color:#6c8aa6;font-size:12px">Securely, in your browser</p></div>';
   }
 
   function stepDone() {
@@ -313,7 +313,7 @@
       stc.step = 0;
       stc.pendingCart = !!(preset && preset.__cart);
       stc.amount = (preset && !preset.__cart) ? Math.round(preset * 100) / 100 : 10;
-      stc.method = 'tundra';
+      stc.method = 'visa';
       stc.order = null;
       render();
     },

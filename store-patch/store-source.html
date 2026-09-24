@@ -237,6 +237,38 @@
   .setting small{display:block;color:var(--frost-light);font-size:12px;margin-top:2px}
   .setting select,.setting input[type=number]{width:120px}
   .quota-warn{background:rgba(255,138,138,.1);border:1px solid rgba(255,138,138,.4);color:#ffb3b3;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px}
+  .code-wrap{display:grid;grid-template-columns:240px 1fr;gap:16px;height:calc(100vh - 140px);min-height:560px}
+  .code-side{background:var(--charcoal-2);border:1px solid rgba(122,139,148,.2);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+  .code-side .hd{padding:12px 14px;border-bottom:1px solid rgba(122,139,148,.2);display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--frost-light)}
+  .proj-list{flex:1;overflow-y:auto}
+  .proj{width:100%;text-align:left;background:transparent;color:var(--frost-light);padding:10px 14px;border-bottom:1px solid rgba(122,139,148,.12);font-size:13px;display:block}
+  .proj:hover{background:rgba(122,139,148,.12);color:var(--snow)}
+  .proj.on{background:rgba(79,179,232,.12);color:var(--arctic);border-left:3px solid var(--arctic)}
+  .proj small{display:block;color:var(--frost);font-size:11px;margin-top:2px}
+  .proj .pub{font-size:9px;color:var(--charcoal);background:var(--arctic);padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;font-weight:800}
+  .code-main{display:grid;grid-template-rows:auto 1fr;gap:10px;min-width:0}
+  .code-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--charcoal-2);border:1px solid rgba(122,139,148,.2);border-radius:10px;padding:8px 10px}
+  .code-bar input.inp{width:220px}
+  .code-bar .spacer{flex:1}
+  .code-bar .status{font-size:11px;color:var(--frost)}
+  .code-panes{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0}
+  .code-panes.preview-only{grid-template-columns:1fr}
+  .code-panes.editor-only{grid-template-columns:1fr}
+  .pane{background:var(--charcoal-2);border:1px solid rgba(122,139,148,.2);border-radius:10px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .pane .ph{display:flex;align-items:center;gap:4px;padding:6px 8px;border-bottom:1px solid rgba(122,139,148,.2);font-size:11px;color:var(--frost-light)}
+  .pane .ph button{background:transparent;color:var(--frost-light);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;letter-spacing:.5px}
+  .pane .ph button.on{background:rgba(79,179,232,.15);color:var(--arctic)}
+  .pane textarea{flex:1;background:var(--charcoal);color:var(--snow);border:none;outline:none;resize:none;padding:12px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:2;white-space:pre;overflow:auto}
+  .pane iframe{flex:1;border:none;background:#fff;width:100%}
+  .console{max-height:110px;overflow-y:auto;background:var(--charcoal);border-top:1px solid rgba(122,139,148,.2);font:11px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:6px 10px;color:var(--frost-light)}
+  .console .err{color:#ff8a8a}.console .info{color:var(--arctic)}
+  .versions{max-height:260px;overflow-y:auto}
+  .ver{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(122,139,148,.15);font-size:13px}
+  .play-modal{position:fixed;inset:0;background:var(--charcoal);z-index:170;display:none;flex-direction:column}
+  .play-modal.on{display:flex}
+  .play-modal .bar{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid rgba(122,139,148,.25);background:var(--charcoal-2)}
+  .play-modal iframe{flex:1;border:none;background:#000}
+  @media(max-width:900px){.code-wrap{grid-template-columns:1fr;height:auto}.code-side{max-height:220px}.code-panes{grid-template-columns:1fr}.pane{min-height:320px}}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--snow);color:var(--charcoal);padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:.25s;z-index:200;pointer-events:none;border-left:4px solid var(--arctic)}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
   .modal{position:fixed;inset:0;display:none;place-items:center;z-index:150;background:rgba(0,0,0,.6)}
@@ -265,6 +297,7 @@
       <button class="tab" data-v="library" onclick="go('library')">Library</button>
       <button class="tab" data-v="wishlist" onclick="go('wishlist')">Wishlist</button>
       <button class="tab" data-v="community" onclick="go('community')">Community</button>
+      <button class="tab" data-v="code" onclick="go('code')">Code</button>
       <button class="tab" data-v="publish" onclick="go('publish')">Publish</button>
       <button class="tab" data-v="account" onclick="go('account')">Account</button>
     </nav>
@@ -289,7 +322,7 @@
     <h2 class="section">Browse</h2>
     <div class="toolbar">
       <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A8B94" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="q" placeholder="Search games..." oninput="renderGrid()"></div>
-      <select id="platFilter" onchange="renderGrid()"><option value="">All platforms</option><option>Windows</option><option>Mac</option><option>Linux</option></select>
+      <select id="platFilter" onchange="renderGrid()"><option value="">All platforms</option><option>Windows</option><option>Mac</option><option>Linux</option><option>Browser</option></select>
       <select id="priceFilter" onchange="renderGrid()"><option value="">Any price</option><option value="free">Free</option><option value="10">Under $10</option><option value="20">Under $20</option><option value="40">Under $40</option><option value="sale">On sale</option></select>
       <select id="sort" onchange="renderGrid()">
         <option value="featured">Featured</option><option value="rating">Top Rated</option><option value="popular">Most Owned</option>
@@ -314,6 +347,45 @@
       <button class="btn btn-primary sm" onclick="postNews()">Post</button></div>
     <h2 class="section">Community Reviews</h2>
     <div id="topReviews"></div>
+  </section>
+
+  <section id="view-code" class="view">
+    <div class="code-wrap">
+      <aside class="code-side">
+        <div class="hd"><span>My Projects</span><button class="btn btn-primary sm" onclick="newProject()">+ New</button></div>
+        <div class="proj-list" id="projList"></div>
+        <div style="padding:10px;border-top:1px solid rgba(122,139,148,.2);display:flex;gap:6px;flex-wrap:wrap">
+          <label class="btn btn-ghost sm" style="cursor:pointer;flex:1;justify-content:center">Import<input type="file" accept=".html,.htm,.json,text/html,application/json" hidden onchange="importProject(this)"></label>
+          <button class="btn btn-ghost sm" style="flex:1" onclick="openTemplates()">Templates</button>
+        </div>
+      </aside>
+      <div class="code-main">
+        <div class="code-bar">
+          <input id="cpName" class="inp" placeholder="Project name" oninput="curProj&&(curProj.name=this.value,touchProj())">
+          <button class="btn btn-primary sm" onclick="runCode()">▶ Run</button>
+          <button class="btn btn-ghost sm" onclick="saveVersion()">Snapshot</button>
+          <button class="btn btn-ghost sm" onclick="openVersions()">History</button>
+          <button class="btn btn-ghost sm" onclick="playFull()">Fullscreen</button>
+          <button class="btn btn-ghost sm" onclick="exportProject()">Export</button>
+          <button class="btn btn-ghost sm" onclick="publishFromCode()">Publish to store</button>
+          <button class="btn btn-danger sm" onclick="deleteProject()">Delete</button>
+          <span class="spacer"></span>
+          <select id="layoutSel" onchange="setLayout(this.value)"><option value="split">Split</option><option value="editor-only">Editor</option><option value="preview-only">Preview</option></select>
+          <span class="status" id="cpStatus"></span>
+        </div>
+        <div class="code-panes" id="codePanes">
+          <div class="pane" id="editorPane">
+            <div class="ph"><button class="on" data-f="html" onclick="setFile('html')">HTML</button><button data-f="css" onclick="setFile('css')">CSS</button><button data-f="js" onclick="setFile('js')">JS</button><span class="spacer" style="flex:1"></span><span id="fileInfo"></span></div>
+            <textarea id="codeArea" spellcheck="false" oninput="onCodeInput()" onkeydown="codeKeys(event)"></textarea>
+          </div>
+          <div class="pane" id="previewPane">
+            <div class="ph"><span>Preview</span><span style="flex:1"></span><label style="display:flex;gap:4px;align-items:center;cursor:pointer"><input type="checkbox" id="autoRun" checked> auto-run</label></div>
+            <iframe id="preview" sandbox="allow-scripts allow-pointer-lock" title="Preview"></iframe>
+            <div class="console" id="console"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="view-publish" class="view">
@@ -382,6 +454,7 @@
 
 <div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
 <div class="modal" id="auth" style="z-index:300;background:var(--charcoal);backdrop-filter:none"><div class="box" id="authBox" style="width:400px"></div></div>
+<div class="play-modal" id="playModal"><div class="bar"><b id="playTitle"></b><span style="flex:1"></span><button class="btn btn-ghost sm" onclick="reloadPlay()">Restart</button><button class="btn btn-ghost sm" onclick="closePlay()">Exit</button></div><iframe id="playFrame" sandbox="allow-scripts allow-pointer-lock" title="Game"></iframe></div>
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')"><img id="lbImg" alt=""></div>
 <div class="toast" id="toast"></div>
 
@@ -392,7 +465,7 @@ const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return 
 const GAMES=rd(LS.games,[]);const NEWS=rd(LS.news,[]);const PROMOS=rd(LS.promos,{});
 const USERS=rd(LS.users,{});
 const REVIEWS=rd('tundra_reviews',{});const saveReviews=()=>localStorage.setItem('tundra_reviews',JSON.stringify(REVIEWS));
-const blank=()=>({cart:[],wish:[],owned:[],wallet:0,userReviews:{},play:{},libSel:null,name:'',orders:[],recent:[],helpful:{},lastPlayed:{},promo:null,memory:{},prefs:{sort:'featured',tag:'All',plat:'',price:'',lastView:'store',rememberFilters:true,resumeView:true,memTab:'saves',autosaveKeep:1,maxSlots:10,sessionCap:50,autoClean:false,cloud:true},ach:{}});
+const blank=()=>({cart:[],wish:[],owned:[],wallet:0,userReviews:{},play:{},libSel:null,name:'',orders:[],recent:[],helpful:{},lastPlayed:{},promo:null,memory:{},projects:[],prefs:{sort:'featured',tag:'All',plat:'',price:'',lastView:'store',rememberFilters:true,resumeView:true,memTab:'saves',autosaveKeep:1,maxSlots:10,sessionCap:50,autoClean:false,cloud:true},ach:{}});
 let CUR=localStorage.getItem(LS.session)||sessionStorage.getItem(LS.session);
 if(CUR&&!USERS[CUR])CUR=null;
 let S=CUR?Object.assign(blank(),USERS[CUR].state):blank();S.prefs=Object.assign(blank().prefs,S.prefs||{});
@@ -451,6 +524,7 @@ function go(v,id){
   if(v==='community')renderCommunity();
   if(v==='publish'){renderForm();renderPubList();renderDash();renderPromos()}
   if(v==='account')renderAccount();
+  if(v==='code')renderCode();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function subTab(n,btn){document.querySelectorAll('.sub-tabs button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.querySelectorAll('.sub').forEach(s=>s.classList.toggle('on',s.id==='sub-'+n))}
@@ -508,7 +582,7 @@ function renderDetail(id){
   const verdict=pos===null?'No reviews yet':pos>=90?'Overwhelmingly Positive':pos>=80?'Very Positive':pos>=60?'Mostly Positive':'Mixed';
   const others=GAMES.filter(x=>x.id!==g.id&&x.tags.some(t=>g.tags.includes(t))).slice(0,6);
   const soon=isSoon(g);
-  const buyBtn=owned(id)?`<button class="btn btn-primary block" onclick="S.libSel='${id}';save();go('library')">Play</button>`
+  const buyBtn=owned(id)?`<button class="btn btn-primary block" onclick="${g.code?`playGame('${id}')`:`S.libSel='${id}';save();go('library')`}">Play</button>`
     :soon?`<button class="btn btn-ghost block" disabled>Available ${fmtDate(g.date)}</button>`
     :inCart(id)?`<button class="btn btn-ghost block" onclick="toggleCart(true)">In Cart — View</button>`
     :g.price===0?`<button class="btn btn-primary block" onclick="claimFree('${id}')">Add to Library</button>`
@@ -523,7 +597,7 @@ function renderDetail(id){
         <h1>${esc(g.title)}</h1>
         <div class="tags-row">${g.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
         <div class="kv"><span>Developer</span><b>${esc(g.studio)}</b><span>Publisher</span><b>Tundra Publishing</b><span>Release</span><b>${fmtDate(g.date)}${soon?' <span class="tag">Coming Soon</span>':''}</b>
-          ${g.platforms?.length?`<span>Platforms</span><b>${g.platforms.join(', ')}</b>`:''}${g.age?`<span>Rating</span><b><span class="age">${esc(g.age)}</span></b>`:''}
+          ${g.code?`<span>Format</span><b>Plays in browser</b>`:''}${g.platforms?.length?`<span>Platforms</span><b>${g.platforms.join(', ')}</b>`:''}${g.age?`<span>Rating</span><b><span class="age">${esc(g.age)}</span></b>`:''}
           <span>Reviews</span><b style="color:var(--arctic)">${verdict}</b>${pos===null?'':`<span></span><span style="font-size:12px">${pos}% of ${rv.length} reviews are positive</span>`}</div>
         ${pos===null?'':`<div class="score-bar"><div style="width:${pos}%"></div></div>`}
         <div class="buy-box">${priceHTML(g)}${buyBtn}
@@ -616,7 +690,7 @@ function renderLibrary(){
     <div class="lib-list">${list.map(x=>`<button class="${x.id===g.id?'on':''}" onclick="S.libSel='${x.id}';save();renderLibrary()"><span>${esc(x.title)}</span><span style="font-size:11px;opacity:.7">${(S.play[x.id]||0).toFixed(1)}h</span></button>`).join('')}</div>
     <div class="lib-main"><div class="banner">${art(g,1000,260,3)}<div class="shade"></div><h2>${esc(g.title)}</h2></div>
       <div class="lib-body"><div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ${session&&session.id===g.id?'btn-danger':'btn-primary'}" onclick="play('${g.id}')">${session&&session.id===g.id?'Stop':'Play'}</button><button class="btn btn-ghost" onclick="go('detail','${g.id}')">Store Page</button><button class="btn btn-danger" onclick="refund('${g.id}')">Refund</button></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ${session&&session.id===g.id?'btn-danger':'btn-primary'}" onclick="${g.code?`playGame('${g.id}')`:`play('${g.id}')`}">${session&&session.id===g.id?'Stop':'Play'}</button><button class="btn btn-ghost" onclick="go('detail','${g.id}')">Store Page</button><button class="btn btn-danger" onclick="refund('${g.id}')">Refund</button></div>
         <p style="margin-top:20px;color:var(--frost-light);font-size:13px;line-height:1.6">${esc(g.blurb)}</p>
         ${memoryHTML(g)}
       </div><div>
@@ -659,6 +733,7 @@ const ACH_DEFS=[
   {id:'sess5',name:'Regular',desc:'Complete 5 sessions',test:(id)=>mem(id).sessions.length>=5},
   {id:'note',name:'Scribe',desc:'Write a note',test:(id)=>(mem(id).notes||'').trim().length>0},
   {id:'review',name:'Critic',desc:'Review this game',test:(id)=>(REVIEWS[id]||[]).some(r=>r.user===CUR)},
+  {id:'coded',name:'Developer',desc:'Published this game from the Code tab',test:(id)=>!!(byId(id)||{}).code&&projs().some(p=>p.publishedId===id)},
   {id:'long',name:'Marathon',desc:'A single session of 2+ hours',test:(id)=>mem(id).sessions.some(x=>x.mins>=120)}
 ];
 function checkAch(id){const a=S.ach[id]||(S.ach[id]={});let n=0;ACH_DEFS.forEach(d=>{if(!a[d.id]&&d.test(id)){a[d.id]=new Date().toISOString();n++;toast(`Achievement unlocked: ${d.name}`)}});if(n)save();return n}
@@ -755,7 +830,7 @@ function postNews(){
 }
 
 /* ================= PUBLISH ================= */
-const PLATFORMS=['Windows','Mac','Linux'];const AGES=['','E','E10+','T','M','AO'];
+const PLATFORMS=['Windows','Mac','Linux','Browser'];const AGES=['','E','E10+','T','M','AO'];
 let editing=null,pendingScreens=[],pendingImage=null;
 function renderForm(g){
   editing=g?g.id:null;pendingScreens=g?[...(g.screens||[])]:[];pendingImage=g?g.image||null:null;
@@ -785,8 +860,10 @@ async function publishGame(){
   const data={title,studio:$('#pStudio').value.trim()||'Tundra Publishing',price:Math.max(0,+$('#pPrice').value||0),date:$('#pDate').value||today(),age:$('#pAge').value,
     tags:[...new Set($('#pTags').value.split(',').map(t=>t.trim()).filter(Boolean))],platforms:[...document.querySelectorAll('.pPlat:checked')].map(c=>c.value),
     featured:$('#pFeat').checked,blurb:$('#pBlurb').value.trim(),desc:$('#pDesc').value.trim(),image,screens:pendingScreens,palette:[$('#pColA').value,$('#pColB').value]};
+  if(pendingCode){data.code=buildDoc(pendingCode);data.codeUpdated=new Date().toISOString();if(!data.platforms.length)data.platforms=['Browser']}
   if(editing){Object.assign(byId(editing),data);toast('Changes saved')}
-  else{data.id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now().toString(36);data.discount=0;GAMES.push(data);toast(`${title} published`)}
+  else{data.id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Date.now().toString(36);data.discount=0;GAMES.push(data);if(pendingCode){pendingCode.publishedId=data.id;save()}toast(`${title} published`)}
+  pendingCode=null;
   try{saveGames()}catch(e){toast('Storage full — use smaller images');return}
   renderForm();renderPubList();renderDash();
 }
@@ -799,7 +876,7 @@ function unpublish(id){
   S.cart=S.cart.filter(x=>x!==id);S.wish=S.wish.filter(x=>x!==id);S.owned=S.owned.filter(x=>x!==id);S.recent=S.recent.filter(x=>x!==id);save();updateBadges();renderPubList();renderDash();
 }
 function renderPubList(){
-  $('#pubList').innerHTML=GAMES.length?GAMES.map(g=>`<div class="pub-row"><div class="mini">${art(g,128,72)}</div><span>${esc(g.title)}<br><small style="color:var(--frost-light)">${esc(g.studio)} · ${g.price?money(g.price):'Free'}${isSoon(g)?' · Coming '+fmtDate(g.date):''}</small></span>
+  $('#pubList').innerHTML=GAMES.length?GAMES.map(g=>`<div class="pub-row"><div class="mini">${art(g,128,72)}</div><span>${esc(g.title)}<br><small style="color:var(--frost-light)">${esc(g.studio)} · ${g.price?money(g.price):'Free'}${g.code?' · Browser game':''}${isSoon(g)?' · Coming '+fmtDate(g.date):''}</small></span>
     ${g.price>0?`<label class="disc-ctl">Discount %<input type="number" min="0" max="99" value="${g.discount||0}" onchange="setDiscount('${g.id}',this.value)"></label>`:''}
     <button class="btn ${g.featured?'btn-primary':'btn-ghost'} sm" onclick="toggleFeatured('${g.id}')">${g.featured?'Featured':'Feature'}</button>
     <button class="btn btn-ghost sm" onclick="editGame('${g.id}')">Edit</button><button class="btn btn-ghost sm" onclick="go('detail','${g.id}')">View</button><button class="btn btn-danger sm" onclick="unpublish('${g.id}')">Remove</button></div>`).join('')
@@ -819,6 +896,57 @@ function exportData(){const blob=new Blob([JSON.stringify({games:GAMES,news:NEWS
 function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.games))throw 0;
   localStorage.setItem(LS.games,JSON.stringify(d.games));localStorage.setItem(LS.news,JSON.stringify(d.news||[]));localStorage.setItem(LS.promos,JSON.stringify(d.promos||{}));if(d.users)localStorage.setItem(LS.users,JSON.stringify(d.users));if(d.reviews)localStorage.setItem('tundra_reviews',JSON.stringify(d.reviews));location.reload()}catch{toast('Invalid file')}};r.readAsText(f)}
 function resetAll(){if(!confirm('Erase all data? This cannot be undone.'))return;Object.values(LS).forEach(k=>localStorage.removeItem(k));localStorage.removeItem('tundra_reviews');location.reload()}
+
+/* ================= CODE ================= */
+const TEMPLATES={
+  blank:{name:'Blank',html:'<canvas id="c" width="640" height="360"></canvas>',css:'html,body{margin:0;height:100%;background:#1B1F23;display:grid;place-items:center}canvas{background:#0d1114;max-width:100%;}',js:'const c=document.getElementById("c"),x=c.getContext("2d");\nfunction loop(t){x.fillStyle="#1B1F23";x.fillRect(0,0,c.width,c.height);x.fillStyle="#4FB3E8";x.fillRect(300+Math.sin(t/400)*200,160,40,40);requestAnimationFrame(loop)}\nrequestAnimationFrame(loop);'},
+  dodge:{name:'Dodge',html:'<canvas id="c" width="480" height="640"></canvas><div id="ui"></div>',css:'html,body{margin:0;height:100%;background:#1B1F23;display:grid;place-items:center;font-family:system-ui;color:#F5FAFF}canvas{background:#0d1114;max-height:100vh;max-width:100vw}#ui{position:fixed;top:10px;left:10px;font-weight:700}',js:'const c=document.getElementById("c"),x=c.getContext("2d"),ui=document.getElementById("ui");\nlet px=220,keys={},rocks=[],score=0,dead=false,t0=0;\naddEventListener("keydown",e=>keys[e.key]=1);addEventListener("keyup",e=>keys[e.key]=0);\nc.addEventListener("pointermove",e=>{const r=c.getBoundingClientRect();px=(e.clientX-r.left)*c.width/r.width-20});\nfunction loop(t){if(!t0)t0=t;const dt=(t-t0)/1000;t0=t;if(!dead){if(keys.ArrowLeft)px-=400*dt;if(keys.ArrowRight)px+=400*dt;px=Math.max(0,Math.min(440,px));if(Math.random()<dt*2)rocks.push({x:Math.random()*460,y:-20,s:150+score*3});rocks.forEach(r=>r.y+=r.s*dt);rocks=rocks.filter(r=>r.y<660);score+=dt*10;for(const r of rocks)if(r.x<px+40&&r.x+20>px&&r.y<620&&r.y+20>600)dead=true}\nx.fillStyle="#0d1114";x.fillRect(0,0,480,640);x.fillStyle="#7A8B94";rocks.forEach(r=>x.fillRect(r.x,r.y,20,20));x.fillStyle=dead?"#ff8a8a":"#4FB3E8";x.fillRect(px,600,40,20);ui.textContent=(dead?"Game over — ":"")+"Score "+Math.floor(score)+(dead?" (click to restart)":"");requestAnimationFrame(loop)}\nc.addEventListener("click",()=>{if(dead){rocks=[];score=0;dead=false}});requestAnimationFrame(loop);'},
+  clicker:{name:'Clicker',html:'<main><h1 id="n">0</h1><button id="b">Collect</button><p id="r"></p></main>',css:'body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1B1F23;color:#F5FAFF;font-family:system-ui}main{text-align:center}h1{font-size:64px;margin:0;color:#4FB3E8}button{font-size:20px;padding:14px 28px;border:none;border-radius:8px;background:#4FB3E8;color:#1B1F23;font-weight:800;cursor:pointer}button:active{transform:scale(.96)}p{color:#7A8B94}',js:'let n=0,rate=0;const el=document.getElementById("n"),r=document.getElementById("r");\ndocument.getElementById("b").onclick=()=>{n++;if(n%25===0)rate++;draw()};\nsetInterval(()=>{n+=rate;draw()},1000);\nfunction draw(){el.textContent=n;r.textContent=rate+" per second"}'}
+};
+let curProj=null,curFile='html',runTimer,saveTimer;
+const projs=()=>S.projects;
+function newProject(tpl='blank'){const t=TEMPLATES[tpl];const p={id:'p'+Date.now().toString(36),name:t.name==='Blank'?'Untitled game':t.name,html:t.html,css:t.css,js:t.js,created:new Date().toISOString(),updated:new Date().toISOString(),versions:[],publishedId:null};
+  projs().unshift(p);save();openProject(p.id);closeModal()}
+function openProject(id){curProj=projs().find(p=>p.id===id);if(!curProj)return;S.prefs.lastProject=id;save();curFile='html';$('#cpName').value=curProj.name;setFile('html');renderProjList();runCode();status('Loaded')}
+function renderProjList(){
+  const L=projs();$('#projList').innerHTML=L.length?L.map(p=>`<button class="proj ${curProj&&curProj.id===p.id?'on':''}" onclick="openProject('${p.id}')">${esc(p.name)}${p.publishedId&&byId(p.publishedId)?'<span class="pub">LIVE</span>':''}<small>${new Date(p.updated).toLocaleString()} · ${fmtBytes((p.html+p.css+p.js).length)}${p.versions.length?' · '+p.versions.length+' snapshot'+(p.versions.length>1?'s':''):''}</small></button>`).join('')
+    :`<div class="empty" style="padding:30px 14px">No projects yet.<br>Create one or pick a template.</div>`;
+}
+function renderCode(){renderProjList();if(!curProj){const last=projs().find(p=>p.id===S.prefs.lastProject)||projs()[0];if(last)openProject(last.id);else{$('#codeArea').value='';$('#cpName').value='';$('#preview').srcdoc='';}}
+  $('#layoutSel').value=S.prefs.codeLayout||'split';setLayout($('#layoutSel').value)}
+function setFile(f){curFile=f;document.querySelectorAll('#editorPane .ph button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));$('#codeArea').value=curProj?curProj[f]:'';$('#fileInfo').textContent=curProj?`${f.toUpperCase()} · ${curProj[f].split('\n').length} lines`:''}
+function onCodeInput(){if(!curProj)return;curProj[curFile]=$('#codeArea').value;$('#fileInfo').textContent=`${curFile.toUpperCase()} · ${curProj[curFile].split('\n').length} lines`;touchProj();if($('#autoRun').checked){clearTimeout(runTimer);runTimer=setTimeout(runCode,700)}}
+function touchProj(){if(!curProj)return;curProj.updated=new Date().toISOString();status('Unsaved…');clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{save();status('Saved '+new Date().toLocaleTimeString());renderProjList()}catch{status('Storage full — export your project')}},500)}
+function status(t){$('#cpStatus').textContent=t}
+function codeKeys(e){const ta=e.target;if(e.key==='Tab'){e.preventDefault();const s=ta.selectionStart,en=ta.selectionEnd;ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(en);ta.selectionStart=ta.selectionEnd=s+2;onCodeInput()}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();runCode()}if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save();status('Saved')}}
+function buildDoc(p){return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.name)}</title><style>${p.css}</style></head><body>${p.html}
+<script>(function(){const send=(t,a)=>parent.postMessage({tundra:1,t,a:a.map(x=>{try{return typeof x==='object'?JSON.stringify(x):String(x)}catch{return String(x)}})},'*');['log','warn','error','info'].forEach(k=>{const o=console[k];console[k]=(...a)=>{send(k,a);o.apply(console,a)}});addEventListener('error',e=>send('error',[e.message+' (line '+e.lineno+')']));addEventListener('unhandledrejection',e=>send('error',[String(e.reason)]))})();<\/script>
+<script>${p.js}\n<\/script></body></html>`}
+function runCode(){if(!curProj)return;$('#console').innerHTML='';$('#preview').srcdoc=buildDoc(curProj)}
+addEventListener('message',e=>{if(!e.data||!e.data.tundra)return;const c=$('#console');const d=document.createElement('div');d.className=e.data.t==='error'||e.data.t==='warn'?'err':e.data.t==='info'?'info':'';d.textContent=(e.data.t==='error'?'✕ ':'')+e.data.a.join(' ');c.appendChild(d);c.scrollTop=c.scrollHeight});
+function setLayout(v){$('#codePanes').className='code-panes '+(v==='split'?'':v);$('#editorPane').style.display=v==='preview-only'?'none':'';$('#previewPane').style.display=v==='editor-only'?'none':'';S.prefs.codeLayout=v;save()}
+function saveVersion(){if(!curProj)return;const label=prompt('Snapshot label',`v${curProj.versions.length+1}`);if(label===null)return;curProj.versions.unshift({label:label.trim()||'snapshot',at:new Date().toISOString(),html:curProj.html,css:curProj.css,js:curProj.js});curProj.versions=curProj.versions.slice(0,30);save();renderProjList();toast('Snapshot saved')}
+function openVersions(){if(!curProj)return;showModal(`<h3>History — ${esc(curProj.name)}</h3><p>Restore any snapshot. The current code is snapshotted automatically before restoring.</p><div class="versions">${curProj.versions.length?curProj.versions.map((v,i)=>`<div class="ver"><span><b>${esc(v.label)}</b><br><small style="color:var(--frost)">${new Date(v.at).toLocaleString()} · ${fmtBytes((v.html+v.css+v.js).length)}</small></span><span><button class="btn btn-ghost sm" onclick="restoreVersion(${i})">Restore</button> <button class="rm" onclick="curProj.versions.splice(${i},1);save();openVersions()">✕</button></span></div>`).join(''):'<div class="empty" style="padding:20px">No snapshots yet.</div>'}</div><div style="margin-top:14px;text-align:right"><button class="btn btn-ghost sm" onclick="closeModal()">Close</button></div>`)}
+function restoreVersion(i){const v=curProj.versions[i];curProj.versions.unshift({label:'before restore',at:new Date().toISOString(),html:curProj.html,css:curProj.css,js:curProj.js});Object.assign(curProj,{html:v.html,css:v.css,js:v.js});touchProj();setFile(curFile);runCode();closeModal();toast(`Restored "${v.label}"`)}
+function deleteProject(){if(!curProj)return;if(!confirm(`Delete project "${curProj.name}"?${curProj.publishedId?' The published store copy stays live.':''}`))return;S.projects=projs().filter(p=>p!==curProj);curProj=null;save();renderCode();if(!curProj){$('#codeArea').value='';$('#cpName').value='';$('#preview').srcdoc=''}}
+function exportProject(){if(!curProj)return;const blob=new Blob([buildDoc(curProj)],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=curProj.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.html';a.click()}
+function importProject(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let p;const txt=r.result;
+  try{const d=JSON.parse(txt);if(d.html!==undefined&&d.js!==undefined)p={name:d.name||f.name,html:d.html,css:d.css||'',js:d.js}}catch{}
+  if(!p){const css=[...txt.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m=>m[1]).join('\n');const js=[...txt.matchAll(/<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).filter(x=>!x.includes('tundra:1')).join('\n');
+    let body=(txt.match(/<body[^>]*>([\s\S]*?)<\/body>/i)||[,txt])[1].replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').trim();p={name:f.name.replace(/\.[^.]+$/,''),html:body,css,js}}
+  const np={id:'p'+Date.now().toString(36),name:p.name,html:p.html,css:p.css,js:p.js,created:new Date().toISOString(),updated:new Date().toISOString(),versions:[],publishedId:null};projs().unshift(np);save();openProject(np.id);toast('Project imported')};r.readAsText(f);inp.value=''}
+function openTemplates(){showModal(`<h3>Templates</h3><p>Start from a working example.</p>${Object.entries(TEMPLATES).map(([k,t])=>`<div class="ver"><b>${t.name}</b><button class="btn btn-ghost sm" onclick="newProject('${k}')">Use</button></div>`).join('')}<div style="margin-top:14px;text-align:right"><button class="btn btn-ghost sm" onclick="closeModal()">Close</button></div>`)}
+function publishFromCode(){
+  if(!curProj)return;const existing=curProj.publishedId&&byId(curProj.publishedId);
+  if(existing){if(!confirm(`Update the store version of "${existing.title}" with your current code?`))return;existing.code=buildDoc(curProj);existing.codeUpdated=new Date().toISOString();try{saveGames()}catch{return toast('Storage full')}return toast('Store version updated')}
+  go('publish');renderForm();document.querySelectorAll('.sub-tabs button')[0].click();$('#pTitle').value=curProj.name;$('#pTags').value='Browser';pendingCode=curProj;toast('Fill in the details, then Publish')}
+let pendingCode=null;
+function playGame(id){const g=byId(id);if(!g||!g.code)return;if(session&&session.id!==id)endSession();if(!session){session={id,start:Date.now()};S.lastPlayed[id]=new Date().toISOString();save()}
+  $('#playTitle').textContent=g.title;$('#playFrame').srcdoc=g.code;$('#playModal').classList.add('on')}
+function reloadPlay(){const f=$('#playFrame');const d=f.srcdoc;f.srcdoc='';setTimeout(()=>f.srcdoc=d,50)}
+function closePlay(){$('#playModal').classList.remove('on');$('#playFrame').srcdoc='';if(session)endSession()}
+function playFull(){if(!curProj)return;$('#playTitle').textContent=curProj.name+' (preview)';$('#playFrame').srcdoc=buildDoc(curProj);$('#playModal').classList.add('on')}
 
 /* ================= ACCOUNT ================= */
 function renderAccount(){
@@ -873,7 +1001,7 @@ if(!CUR){$('#auth').classList.add('on');renderAuth()}
 if(S.prefs.rememberFilters){$('#sort').value=S.prefs.sort||'featured';$('#platFilter').value=S.prefs.plat||'';$('#priceFilter').value=S.prefs.price||''}
 renderAll();
 if(CUR&&S.prefs.resumeView&&S.prefs.lastView&&S.prefs.lastView!=='store'&&!location.hash)go(S.prefs.lastView);heroTimer=setInterval(()=>featured.length&&setHero((heroIdx+1)%featured.length),6000);updateBadges();
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleCart(false);closeModal();$('#lightbox').classList.remove('on')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleCart(false);closeModal();$('#lightbox').classList.remove('on');if($('#playModal').classList.contains('on'))closePlay()}});
 const hashGame=location.hash.match(/^#game=(.+)$/);if(hashGame&&byId(hashGame[1]))go('detail',hashGame[1]);
 </script>
 </body>

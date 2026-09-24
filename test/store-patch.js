@@ -39,11 +39,15 @@ if (!s.includes('Name on payment method')) fail('payment details form missing');
 if (!s.includes('function payValid()')) fail('payment validation missing');
 if (!s.includes('CVC')) fail('CVC field missing');
 
+/* ---- 3b) real payment brands (no fake companies) ---- */
+if (s.includes('Tundra Pay') || s.includes('Frost Card') || s.includes('Snowbank') || s.includes('PayPuffin')) fail('fake payment brands still present');
+if (!s.includes("name: 'Visa'") || !s.includes("name: 'Mastercard'") || !s.includes("name: 'American Express'") || !s.includes("name: 'PayPal'")) fail('real payment brands missing');
+
 /* ---- 4) HTML sanity ---- */
-const opens = (s.toLowerCase().match(/<script/g) || []).length;
-const closes = (s.toLowerCase().match(/<\/script>/g) || []).length;
-if (opens !== closes) fail('script tags unbalanced: ' + opens + ' open / ' + closes + ' close');
+// NOTE: the store embeds <script> tags inside JS template strings (game srcdoc),
+// so naive open/close balance is meaningless — require a real close after the last open.
 if (!s.trimEnd().toLowerCase().endsWith('</html>')) fail('html tail broken');
+if (s.toLowerCase().lastIndexOf('</script>') <= s.toLowerCase().lastIndexOf('<script')) fail('no real </script> after last <script');
 
 /* ---- 5) build.py anchors stay reproducible ---- */
 const anchors = [
