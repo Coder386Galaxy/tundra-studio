@@ -37,7 +37,7 @@ vm.createContext(sbR);
 vm.runInContext(fs.readFileSync('js/llm.js', 'utf8'), sbR, { filename: 'llm.js' });   // browser load order
 vm.runInContext(fs.readFileSync('js/runner.js', 'utf8'), sbR, { filename: 'runner.js' });
 const RNR = sbR.window.Runner;
-if (RNR.LANGS.map(l => l.id).join() !== 'js,py,lua') fail('lang list');
+if (RNR.LANGS.map(l => l.id).join() !== 'js,py,lua,frost') fail('lang list');
 
 const sneaky = 'def update(dt):\n    s = "</script><script>alert(1)</script>"\n    text(s, 1, 2)';
 for (const lang of ['py', 'lua']) {
@@ -109,7 +109,7 @@ const sb3 = { window: {}, Math, JSON, Date, console, Array, Object, String, Numb
 vm.createContext(sb3);
 vm.runInContext(fs.readFileSync('js/templates.js', 'utf8'), sb3, { filename: 'templates.js' });
 const TPL = sb3.window.Templates;
-for (const lang of ['js', 'py', 'lua']) {
+for (const lang of ['js', 'py', 'lua', 'frost']) {
   const st = TPL.get(lang, 'starter'), em = TPL.get(lang, 'empty');
   if (!st.code || !em.code) fail(lang + ' templates missing');
   if (!LM.extractMeta(st.code)) fail(lang + ' starter meta unreadable');
@@ -180,6 +180,59 @@ if (run) {
   } catch (e) { fail('js template: runtime error: ' + e.message); }
   console.log('ok: js starter (' + Math.round(code.length / 1024) + ' KB)');
 }
+
+/* ---------- 5b) FROST — the hypereasy language boots + plays headlessly ---------- */
+try {
+  const wF = RNR.wrap('frost', TPL.get('frost', 'starter').code, { title: 'Starfall Catch', hint: 'h', blurb: 'b', palette: ['#1', '#2'] });
+  if (!wF.includes('bootFrost')) fail('frost wrap missing bootFrost');
+  if (wF.includes('cdn.jsdelivr') || wF.includes('fengari')) fail('frost wrap should not use a CDN');
+  if ((wF.match(/<\/script>/g) || []).length !== 1) fail('frost wrap script-tag count: ' + (wF.match(/<\/script>/g) || []).length);
+  if (!TPL.get('frost', 'empty').code.includes('title My Game')) fail('frost empty template broken');
+  if (!LM.extractMeta(TPL.get('frost', 'starter').code)) fail('frost starter meta unreadable');
+  const framesF = [], listenersF = {};
+  const stubCtxF = new Proxy({}, { get: (t, k) => (k === 'createLinearGradient' ? () => ({ addColorStop() { } }) : function () { }), set: () => true });
+  const cvF = {
+    width: 0, height: 0, getContext: () => stubCtxF,
+    addEventListener: (t, f) => { (listenersF[t] = listenersF[t] || []).push(f); },
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 450 }),
+    toDataURL: () => 'data:image/jpeg;base64,fake'
+  };
+  const statusEl = { textContent: '', className: '', style: {} };
+  const sbF = {
+    window: null,
+    document: {
+      getElementById: (id) => (id === 'status' ? statusEl : cvF),
+      addEventListener: (t, f) => { (listenersF['doc:' + t] = listenersF['doc:' + t] || []).push(f); }
+    },
+    addEventListener: (t, f) => { (listenersF[t] = listenersF[t] || []).push(f); },
+    removeEventListener: () => { },
+    localStorage: { getItem: () => '0', setItem: () => { } },
+    requestAnimationFrame: (fn) => { framesF.push(fn); },
+    parent: { postMessage: () => { } },
+    Math, JSON, Date, console, Array, Object, String, Number, RegExp, isFinite, parseInt, parseFloat
+  };
+  sbF.window = sbF;
+  const blocksF = [];
+  const reF = /<script>([\s\S]*?)<\/script>/g;
+  let mF;
+  while ((mF = reF.exec(wF))) blocksF.push(mF[1]);
+  if (blocksF.length !== 1) fail('frost inline script blocks: ' + blocksF.length);
+  else {
+    vm.createContext(sbF);
+    vm.runInContext(blocksF[0], sbF, { filename: 'frost-build.js' });
+    const TF = sbF.window.Tundra;
+    if (!TF || !TF._hooks || typeof TF._hooks.update !== 'function') fail('frost boot did not install hooks');
+    else if (statusEl.className === 'bad') fail('frost parse error: ' + statusEl.textContent);
+    else {
+      TF.start();
+      let tF = 0;
+      for (let i = 0; i < 40; i++) { tF += 16.7; const fn = framesF.shift(); if (fn) fn(tF); }
+      if (statusEl.className === 'bad') fail('frost runtime error: ' + statusEl.textContent);
+      if (TF.state() !== 'play' && TF.state() !== 'over') fail('frost did not enter play');
+      console.log('ok: frost starter boots + plays headlessly');
+    }
+  }
+} catch (e) { fail('frost suite error: ' + e.message); }
 
 /* ---------- 6) py/lua wrap builds boot headlessly (API + boot fns) ---------- */
 try {

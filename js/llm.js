@@ -84,7 +84,7 @@
   }
 
   function sysEdit(lang) {
-    var names = { js: 'an HTML/CSS/JS document', py: 'a Python source file', lua: 'a Lua source file' };
+    var names = { js: 'an HTML/CSS/JS document', py: 'a Python source file', lua: 'a Lua source file', frost: 'a Frost (hypereasy language) source file' };
     return [
       'You are a senior game developer working inside Tundra Studio. The user gives you ' + (names[lang] || names.js) + ' and a change request.',
       'Apply the change thoroughly and return the COMPLETE revised code — never a diff, never fragments.',
@@ -94,7 +94,7 @@
       '2. Keep it self-contained and offline. Keep code readable and commented.',
       "3. Preserve the user's unrelated code and style. Keep the TUNDRA_META comment (update it only if the change affects title/desc/tags/palette/hint).",
       '4. Keep the game playable end-to-end (title -> play -> game over -> restart).',
-      lang === 'js' ? '5. Keep the tundra-game screenshot bridge working.' : '5. Keep the init/update/draw hooks and the Tundra API conventions intact.'
+      lang === 'js' ? '5. Keep the tundra-game screenshot bridge working.' : (lang === 'frost' ? '5. Keep one instruction per line and the Frost syntax intact.' : '5. Keep the init/update/draw hooks and the Tundra API conventions intact.')
     ].join('\n');
   }
 
@@ -160,9 +160,49 @@
     });
   }
 
+  /* Reference for Frost — the hypereasy game language (declarative, one instruction per line). */
+  var FROST_REF = [
+    'FROST GRAMMAR — the hypereasy game language. One instruction per line. Keywords are case-insensitive.',
+    "'#' starts a comment line; '//' starts a trailing comment. Colors are #hex or names like red/blue.",
+    '',
+    'SETUP (all optional except as noted):',
+    '  title <text>                     the game title',
+    '  bg <color> [<color>]             background (one color, or gradient top bottom)',
+    '  lives <n>                        starting lives (default 3)',
+    '  goal <n>                         win when score reaches n',
+    '  win <text>                       message when the goal is reached',
+    '  lose <text>                      message when lives run out',
+    '',
+    'SPRITES:',
+    '  player <id> <circle|square|star|tri> <size> <color> at <x> <y>     exactly one player line',
+    '  thing <id> <shape> <size> <color> fall <px/s> [every <sec>] [from top|left|right] [drift <n>]    a falling/drifting spawner',
+    '  control <id> <arrows|wasd|drag|mouse...> speed <px/s>             how the player moves',
+    '',
+    'RULES:',
+    '  when <id> touches <id>: <actions>       fires whenever the two sprites overlap',
+    '  on score <n>: <actions>                 fires once when the score first reaches n',
+    '',
+    'ACTIONS (comma-separated after the colon):',
+    '  score <n>   lives <n>   remove [id]   sound pop|coin|beep|crash|hit|jump|win|lose',
+    '  burst   flash   shake [n]   speed <id> <factor>   win <text>   lose <text>',
+    '',
+    'RULES OF THUMB: ids are short words (orb, star, shard). Sizes are radii in px (canvas is 800x450).',
+    'The runtime handles the title screen, pause, game over, restart, score/best HUD and M to mute.',
+    'Keep every line short and readable — anyone should understand the whole game at a glance.'
+  ].join('\n');
+
   function systemFor(lang) {
     if (lang === 'py') return sysGenScript('Python 3', '# TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description","tags":["3","to","6"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"}');
     if (lang === 'lua') return sysGenScript('Lua 5.4', '-- TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description","tags":["3","to","6"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"}');
+    if (lang === 'frost') {
+      return sysBase('ONE source file of Frost, the hypereasy game language (no HTML, no markdown — just the program)')
+        .replace('__META__', '# TUNDRA_META {"title":"...","blurb":"max 160 chars","desc":"store description","tags":["3","to","6"],"age":"E|E10+|T","price":0,"palette":["#111111","#4FB3E8"],"hint":"controls string"}') +
+        '\n\n' + FROST_REF + '\n\n' +
+        'FROST SPECIFICS:\n' +
+        '- Output ONLY the Frost source file contents. One instruction per line — no functions, no loops, no punctuation at line ends.\n' +
+        '- The metadata comment must be the very first line of the file.\n' +
+        '- Nothing else is needed: the studio runs Frost natively and draws the title/HUD overlays and the store bridge for you.';
+    }
     return SYS_GEN_JS;
   }
 

@@ -21,13 +21,18 @@ Or open `Tundra-Studio.html` — a fully self-contained single-file build of the
 
 | Language | What you edit | How it runs | Publish build |
 |---|---|---|---|
+| **Frost (Hypereasy)** | `game.frost` — one instruction per line | runs natively in a tiny built-in interpreter, zero deps | auto-wrapped HTML |
 | **JavaScript** | `index.html` — a complete HTML document | runs raw, zero deps | the document itself |
 | **Python** | `game.py` | [Pyodide](https://pyodide.org) in-browser, small `Tundra` game API | auto-wrapped HTML |
 | **Lua** | `game.lua` | [Fengari](https://fengari.io) in-browser, same `Tundra` API | auto-wrapped HTML |
 
+**Frost** is the hypereasy game language: you write declarative lines like
+`player orb circle 26 #8fd8ff at 50% 86%` and `when orb touches star: score 1, remove star, sound pop`
+— the runtime supplies the loop, spawning, collisions, title screen and HUD. No functions, no loops.
+
 Everything follows the choice: syntax highlighting, the AI's instructions, starter templates,
 the filename you download, and how preview/publish wraps the build. Python & Lua builds load their
-runtime from a CDN the first time; the source stays plain and portable.
+runtime from a CDN the first time; Frost and JavaScript need no network at all.
 
 The `Tundra` API for script languages is a thin arcade layer — `circle/rect/text`, `key/pressed`,
 `score/lives`, `shake/flash/burst/beep`, `game_over()` — with `init()`, `update(dt)`, `draw()`

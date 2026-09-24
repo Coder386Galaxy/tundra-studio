@@ -14,13 +14,14 @@
   var KW = {
     js: 'var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|try|catch|finally|typeof|instanceof|null|true|false|undefined|async|await|in|of|delete|void',
     py: 'def|class|if|elif|else|for|while|return|import|from|as|try|except|finally|with|lambda|True|False|None|not|in|is|and|or|pass|break|continue|global|nonlocal|yield|raise|assert|del',
-    lua: 'local|function|end|if|then|else|elseif|for|while|do|return|nil|true|false|and|or|not|repeat|until|in|break'
+    lua: 'local|function|end|if|then|else|elseif|for|while|do|return|nil|true|false|and|or|not|repeat|until|in|break',
+    frost: 'title|bg|lives|goal|win|lose|player|thing|control|when|on|touches|score|remove|sound|burst|shake|flash|speed|fall|every|from|drift|at|top|left|right|arrows|wasd|drag|mouse'
   };
 
   function buildRE(lang) {
     var kw = KW[lang] || KW.js;
     var com;
-    if (lang === 'py') com = '(#[^\\n]*)';
+    if (lang === 'py' || lang === 'frost') com = '(#[^\\n]*)';
     else if (lang === 'lua') com = '(--\\[\\[[\\s\\S]*?\\]\\]|--[^\\n]*)';
     else com = '(&lt;!--[\\s\\S]*?--&gt;|/\\*[\\s\\S]*?\\*/|//[^\\n]*)';
     return new RegExp([
@@ -32,7 +33,7 @@
     ].join('|'), 'g');
   }
 
-  var RES = { js: buildRE('js'), py: buildRE('py'), lua: buildRE('lua') };
+  var RES = { js: buildRE('js'), py: buildRE('py'), lua: buildRE('lua'), frost: buildRE('frost') };
   var LANG = 'js';
 
   function highlight(src) {

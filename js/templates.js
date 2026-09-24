@@ -489,12 +489,58 @@
     'end',
   ].join('\n');
 
+  /* ============ FROST — the hypereasy game language ============ */
+  var FROST_META = '# TUNDRA_META {"title":"Starfall Catch","blurb":"Catch falling stars, dodge the dark shards, and chase your best score.","desc":"Starfall Catch is a tiny arcade game: guide the aurora orb, collect every star, and never touch a shard. Written in Frost, the hypereasy game language — one instruction per line. Read it, change the rules, make it yours.","tags":["Arcade","Catch","Cozy","Indie"],"age":"E","price":0,"palette":["#123a55","#8fd8ff"],"hint":"Arrows / A D or drag to move"}';
+
+  var EMPTY_FROST = [
+    FROST_META.replace('Starfall Catch','My Game').replace('Catch falling stars, dodge the dark shards, and chase your best score.','A brand new Frost game — describe it in one line.').replace(/"desc":"[^"]*"/, '"desc":"A brand new game written in Frost, the hypereasy game language."'),
+    '# MY GAME — written in Frost, the hypereasy game language.',
+    '# One instruction per line. Change anything and press Run.',
+    '',
+    'title My Game',
+    'bg #123a55 #071b2c',
+    'goal 10',
+    'win Nice one!',
+    '',
+    'player orb circle 26 #8fd8ff at 50% 86%',
+    'control orb arrows drag speed 380',
+    '',
+    'thing star star 14 #ffd166 fall 220 every 0.8 from top',
+    'when orb touches star: score 1, remove star, sound pop, burst'
+  ].join('\n');
+
+  var STARFALL_FROST = [
+    FROST_META,
+    '# STARFALL CATCH — a Tundra Studio starter game (Frost).',
+    '# One instruction per line. Change anything and press Run.',
+    '',
+    'title Starfall Catch',
+    'bg #123a55 #071b2c',
+    'lives 3',
+    'goal 25',
+    'win You cleared the sky!',
+    'lose The shards got you.',
+    '',
+    'player orb circle 26 #8fd8ff at 50% 86%',
+    'control orb arrows wasd drag speed 380',
+    '',
+    'thing star star 14 #ffd166 fall 220 every 0.75 from top',
+    'thing shard square 12 #ff5d8f fall 300 every 1.15 from top drift 45',
+    '',
+    'when orb touches star: score 1, remove star, sound pop, burst',
+    'when orb touches shard: lives -1, remove shard, sound crash, shake 10, flash',
+    '',
+    'on score 10: speed star 1.25',
+    'on score 20: speed shard 1.3'
+  ].join('\n');
+
   window.Templates = {
     arcade: { id: 'arcade', label: 'Starter game', desc: 'Commented canvas game — catch stars, dodge shards', code: ARCADE },
     empty:  { id: 'empty',  label: 'Empty page',   desc: 'Bare HTML skeleton', code: EMPTY },
     /* language-aware access: get(lang, 'starter'|'empty') */
     get: function (lang, kind) {
       var starter = kind !== 'empty';
+      if (lang === 'frost') return { code: starter ? STARFALL_FROST : EMPTY_FROST, label: starter ? 'Starter game (Frost)' : 'Empty Frost file' };
       if (lang === 'py') return { code: starter ? STARFALL_PY : EMPTY_PY, label: starter ? 'Starter game (Python)' : 'Empty Python file' };
       if (lang === 'lua') return { code: starter ? STARFALL_LUA : EMPTY_LUA, label: starter ? 'Starter game (Lua)' : 'Empty Lua file' };
       return { code: starter ? ARCADE : EMPTY, label: starter ? 'Starter game' : 'Empty page' };

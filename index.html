@@ -139,6 +139,7 @@ Configure it under ⚙ Engine.</pre>
               <option value="js">JavaScript</option>
               <option value="py">Python</option>
               <option value="lua">Lua</option>
+              <option value="frost">Frost (Hypereasy)</option>
             </select>
             <span class="fileline" id="fileLabel">index.html</span>
             <label class="autoline"><input type="checkbox" id="autoRun" onchange="TS.setAutoRun(this.checked)"> run on type</label>
@@ -313,7 +314,8 @@ Configure it under ⚙ Engine.</pre>
         <h3>⌨️ The Code Room — no AI</h3>
         <p>The <b>Code Room</b> is a workspace with zero AI in it: no prompts, no assistant, nothing
           calling out to a model. Pick your language — <b>JavaScript</b> (complete HTML document),
-          <b>Python</b> (via Pyodide) or <b>Lua</b> (via Fengari) — and just write.</p>
+          <b>Python</b> (via Pyodide), <b>Lua</b> (via Fengari) or <b>Frost</b>, the hypereasy game
+          language (one instruction per line, runs natively) — and just write.</p>
         <p>Real editor: syntax highlighting per language, line numbers, tab/indent, Ctrl+Enter to run,
           Ctrl+S to save. Python and Lua use a small <code>Tundra</code> game API (draw, input, score, juice)
           and run in the browser — the publish build wraps them automatically.</p>

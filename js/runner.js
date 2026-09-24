@@ -17,7 +17,8 @@
   var LANGS = [
     { id: 'js',  label: 'JavaScript', file: 'index.html', note: 'complete HTML document — full control' },
     { id: 'py',  label: 'Python',     file: 'game.py',    note: 'Python 3 via Pyodide, Tundra API' },
-    { id: 'lua', label: 'Lua',        file: 'game.lua',   note: 'Lua 5.4 via Fengari, Tundra API' }
+    { id: 'lua', label: 'Lua',        file: 'game.lua',   note: 'Lua 5.4 via Fengari, Tundra API' },
+    { id: 'frost', label: 'Frost (Hypereasy)', file: 'game.frost', note: 'the hypereasy game language — one instruction per line' }
   ];
 
   var CDN = {
@@ -139,12 +140,13 @@
       state = 'play';
       if (hooks.init) hooks.init();
     }
-    function gameOver(win) {
+    function gameOver(win, msg) {
       if (score > best) { best = score; saveBest(); }
       state = 'over';
       tundraWin = !!win;
+      overMsg = String(msg || '');
     }
-    var tundraWin = false;
+    var tundraWin = false, overMsg = '';
 
     /* ---- screens ---- */
     function paintBg() {
@@ -201,7 +203,7 @@
         overlay('PAUSED', titleText, 'PRESS P OR ESC TO RESUME');
       } else if (state === 'over') {
         hud();
-        overlay(tundraWin ? 'CLEARED!' : 'GAME OVER', 'SCORE  ' + Math.floor(score),
+        overlay(tundraWin ? 'CLEARED!' : 'GAME OVER', overMsg || ('SCORE  ' + Math.floor(score)),
           (score >= best && score > 0 ? '★ NEW BEST! ' : 'BEST ' + Math.floor(best) + '  ·  ') + 'PRESS R OR TAP');
       }
       if (flashA > 0) {
@@ -285,7 +287,26 @@
       setLives: function (n) { lives = Math.max(0, Math.round(+n || 0)); },
       shake: shake, flash: flash, burst: burst, beep: beep,
       start: start,
-      game_over: gameOver
+      game_over: gameOver,
+      shape: function (x, y, r, kind, c) {
+        kind = String(kind || 'circle').toLowerCase();
+        if (kind === 'square' || kind === 'box') { ctx.fillStyle = c; ctx.fillRect(x - r, y - r, r * 2, r * 2); return; }
+        if (kind === 'star') {
+          ctx.fillStyle = c; ctx.beginPath();
+          for (var i = 0; i < 10; i++) {
+            var a = -Math.PI / 2 + i * Math.PI / 5, rr = (i % 2) ? r * 0.45 : r;
+            if (i) ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+            else ctx.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+          }
+          ctx.closePath(); ctx.fill(); return;
+        }
+        if (kind === 'tri' || kind === 'triangle') {
+          ctx.fillStyle = c; ctx.beginPath();
+          ctx.moveTo(x, y - r); ctx.lineTo(x + r, y + r); ctx.lineTo(x - r, y + r);
+          ctx.closePath(); ctx.fill(); return;
+        }
+        circle(x, y, r, c);
+      }
     };
   }
 
@@ -431,6 +452,250 @@
     }
   }
 
+  /* ---------------- FROST — the hypereasy game language (runs inside the build) ---------------- */
+  function bootFrost(src) {
+    var status = document.getElementById('status');
+    function say(msg, bad) {
+      if (!status) return;
+      status.textContent = msg;
+      status.className = bad ? 'bad' : '';
+      status.style.display = msg ? '' : 'none';
+    }
+    window.onerror = function (m) { say('Error: ' + m, true); };
+
+    var T = window.Tundra;
+    var SOUNDS = { pop: 660, coin: 980, beep: 440, crash: 150, hit: 220, jump: 520, win: 784, lose: 180 };
+    var CFG = {
+      title: '', bg1: null, bg2: null, goal: 0, lives: 3,
+      players: [], things: [], controls: [], rules: [], onscore: [],
+      winMsg: '', loseMsg: ''
+    };
+    var world = { items: [], spawnT: {}, mult: {}, fired: {}, t: 0 };
+    var P = {};
+
+    function num(x, d) { var v = parseFloat(x); return isNaN(v) ? (d || 0) : v; }
+    function px(x, base) {
+      x = String(x).trim();
+      return x.charAt(x.length - 1) === '%' ? (num(x) / 100) * base : num(x);
+    }
+    function fail(ln, msg) { say('Frost line ' + ln + ': ' + msg, true); throw new Error(msg); }
+
+    function parseActs(s, ln) {
+      var out = [], parts = String(s).split(','), i, a, m;
+      for (i = 0; i < parts.length; i++) {
+        a = parts[i].trim();
+        if (!a) continue;
+        if ((m = a.match(/^score\s+(-?[\d.]+)$/i))) out.push({ k: 'score', n: num(m[1]) });
+        else if ((m = a.match(/^lives\s+(-?[\d.]+)$/i))) out.push({ k: 'lives', n: num(m[1]) });
+        else if ((m = a.match(/^remove\s+(\S+)$/i))) out.push({ k: 'remove', id: m[1].toLowerCase() });
+        else if (/^remove$/i.test(a)) out.push({ k: 'remove', id: '' });
+        else if ((m = a.match(/^sound\s+(\S+)$/i))) out.push({ k: 'sound', f: SOUNDS[m[1].toLowerCase()] || num(m[1], 440) });
+        else if (/^burst$/i.test(a)) out.push({ k: 'burst' });
+        else if (/^flash$/i.test(a)) out.push({ k: 'flash' });
+        else if ((m = a.match(/^shake(?:\s+([\d.]+))?$/i))) out.push({ k: 'shake', n: num(m[1], 8) });
+        else if ((m = a.match(/^speed\s+(\S+)\s+([\d.]+)$/i))) out.push({ k: 'speed', id: m[1].toLowerCase(), n: num(m[2], 1) });
+        else if ((m = a.match(/^win(?:\s+(.*))?$/i))) out.push({ k: 'win', t: m[1] || '' });
+        else if ((m = a.match(/^lose(?:\s+(.*))?$/i))) out.push({ k: 'lose', t: m[1] || '' });
+        else fail(ln, 'unknown action "' + a + '"');
+      }
+      return out;
+    }
+
+    /* ---- parse: one instruction per line ---- */
+    var lines = String(src || '').split(/\r?\n/), li, raw, s, m;
+    for (li = 0; li < lines.length; li++) {
+      raw = lines[li];
+      if (/^\s*#/.test(raw)) continue;                 // # comment lines (colors keep their #)
+      s = raw.replace(/\/\/.*$/, '').replace(/^\s+|\s+$/g, '');
+      if (!s) continue;
+      if ((m = s.match(/^title\s+(.+)$/i))) CFG.title = m[1].trim();
+      else if ((m = s.match(/^bg\s+(\S+)(?:\s+(\S+))?$/i))) { CFG.bg1 = m[1]; CFG.bg2 = m[2] || m[1]; }
+      else if ((m = s.match(/^lives\s+([\d.]+)$/i))) CFG.lives = Math.max(1, Math.round(num(m[1], 3)));
+      else if ((m = s.match(/^goal\s+([\d.]+)$/i))) CFG.goal = num(m[1]);
+      else if ((m = s.match(/^win\s+(.+)$/i))) CFG.winMsg = m[1].trim();
+      else if ((m = s.match(/^lose\s+(.+)$/i))) CFG.loseMsg = m[1].trim();
+      else if ((m = s.match(/^player\s+(\S+)\s+(\S+)\s+([\d.]+)\s+(\S+)\s+at\s+(\S+)\s+(\S+)$/i))) {
+        CFG.players.push({ id: m[1].toLowerCase(), shape: m[2].toLowerCase(), size: num(m[3], 20),
+          color: m[4], x: px(m[5], 800), y: px(m[6], 450) });
+      }
+      else if ((m = s.match(/^thing\s+(\S+)\s+(\S+)\s+([\d.]+)\s+(\S+)\s+fall\s+([\d.]+)(?:\s+every\s+([\d.]+))?(?:\s+from\s+(\w+))?(?:\s+drift\s+([\d.]+))?$/i))) {
+        CFG.things.push({ id: m[1].toLowerCase(), shape: m[2].toLowerCase(), size: num(m[3], 14),
+          color: m[4], fall: num(m[5], 200), every: num(m[6], 1), from: (m[7] || 'top').toLowerCase(), drift: num(m[8], 0) });
+      }
+      else if ((m = s.match(/^control\s+(\S+)\s+(.*?)\s+speed\s+([\d.]+)$/i))) {
+        var words = m[2].toLowerCase();
+        CFG.controls.push({ id: m[1].toLowerCase(), speed: num(m[3], 300),
+          arrows: /arrows/.test(words), wasd: /wasd/.test(words), drag: /drag|mouse/.test(words) });
+      }
+      else if ((m = s.match(/^on\s+score\s+([\d.]+)\s*:\s*(.+)$/i))) {
+        CFG.onscore.push({ n: num(m[1]), acts: parseActs(m[2], li + 1) });
+      }
+      else if ((m = s.match(/^when\s+(\S+)\s+touches\s+(\S+)\s*:\s*(.+)$/i))) {
+        CFG.rules.push({ a: m[1].toLowerCase(), b: m[2].toLowerCase(), acts: parseActs(m[3], li + 1) });
+      }
+      else fail(li + 1, 'cannot read "' + s + '"');
+    }
+    if (!CFG.players.length) CFG.players.push({ id: 'orb', shape: 'circle', size: 24, color: '#8fd8ff', x: 400, y: 380 });
+
+    /* ---- world helpers ---- */
+    function gather(id) {
+      var out = [], i;
+      if (P[id]) { out.push(P[id]); return out; }
+      for (i = 0; i < world.items.length; i++) if (world.items[i].id === id && !world.items[i].gone) out.push(world.items[i]);
+      return out;
+    }
+    function hit(a, b) { var dx = a.x - b.x, dy = a.y - b.y, r = (a.r + b.r) * 0.92; return dx * dx + dy * dy < r * r; }
+    function dropCopy(sp) {
+      if (!sp || sp.player) return;
+      sp.gone = 1;
+      for (var i = world.items.length - 1; i >= 0; i--) if (world.items[i] === sp) world.items.splice(i, 1);
+    }
+    function end(win, msg) { T.game_over(!!win, msg || (win ? CFG.winMsg : CFG.loseMsg)); }
+    function fire(acts, A, B) {
+      for (var i = 0; i < acts.length; i++) {
+        var a = acts[i], tgt;
+        if (a.k === 'score') {
+          T.addScore(a.n);
+          if (CFG.goal > 0 && T.score() >= CFG.goal) end(true);
+        }
+        else if (a.k === 'lives') {
+          T.setLives(T.lives() + a.n);
+          if (T.lives() <= 0) end(false);
+        }
+        else if (a.k === 'remove') {
+          tgt = !a.id ? B : (a.id === (B && B.id) ? B : (a.id === (A && A.id) ? A : null));
+          dropCopy(tgt);
+        }
+        else if (a.k === 'sound') T.beep(a.f, 0.09);
+        else if (a.k === 'burst') T.burst(B ? B.x : 400, B ? B.y : 225, (B && B.color) || (A && A.color) || '#ffffff', 12);
+        else if (a.k === 'shake') T.shake(a.n);
+        else if (a.k === 'flash') T.flash(0.5);
+        else if (a.k === 'speed') world.mult[a.id] = (world.mult[a.id] || 1) * a.n;
+        else if (a.k === 'win') end(true, a.t || CFG.winMsg);
+        else if (a.k === 'lose') end(false, a.t || CFG.loseMsg);
+        if (T.state() !== 'play') return;
+      }
+    }
+
+    /* ---- hooks ---- */
+    T._hooks.init = function () {
+      var i, id;
+      world.items = []; world.spawnT = {}; world.mult = {}; world.fired = {}; world.t = 0; P = {};
+      for (i = 0; i < CFG.players.length; i++) {
+        var p = CFG.players[i];
+        P[p.id] = { id: p.id, x: p.x, y: p.y, r: p.size, shape: p.shape, color: p.color, player: true, gone: 0 };
+        world.mult[p.id] = 1;
+      }
+      for (i = 0; i < CFG.things.length; i++) {
+        world.spawnT[CFG.things[i].id] = CFG.things[i].every * (0.4 + 0.6 * T.rand(0, 1));
+        world.mult[CFG.things[i].id] = 1;
+      }
+      T.setLives(CFG.lives);
+      if (CFG.title) T.setTitle(CFG.title, '', '');
+      if (CFG.bg1) T.set_bg(CFG.bg1, CFG.bg2 || CFG.bg1);
+    };
+    T._hooks.update = function (dt) {
+      world.t += dt;
+      var i, j, k, id;
+      for (id in P) P[id].gone = 0;
+      for (i = 0; i < world.items.length; i++) world.items[i].gone = 0;
+      // controls
+      for (i = 0; i < CFG.controls.length; i++) {
+        var ctl = CFG.controls[i], p = P[ctl.id];
+        if (!p) continue;
+        var dx = 0, dy = 0;
+        if (ctl.arrows) {
+          if (T.key('left')) dx -= 1;
+          if (T.key('right')) dx += 1;
+          if (T.key('up')) dy -= 1;
+          if (T.key('down')) dy += 1;
+        }
+        if (ctl.wasd) {
+          if (T.key('a')) dx -= 1;
+          if (T.key('d')) dx += 1;
+          if (T.key('w')) dy -= 1;
+          if (T.key('s')) dy += 1;
+        }
+        if (ctl.drag) {
+          var sp = ctl.speed * dt * 1.7;
+          var qx = T.pointer_x() - p.x, qy = T.pointer_y() - p.y;
+          p.x += Math.max(-sp, Math.min(sp, qx));
+          p.y += Math.max(-sp, Math.min(sp, qy));
+        }
+        if (dx || dy) {
+          var l = Math.sqrt(dx * dx + dy * dy) || 1;
+          p.x += dx / l * ctl.speed * dt;
+          p.y += dy / l * ctl.speed * dt;
+        }
+        p.x = Math.max(p.r, Math.min(800 - p.r, p.x));
+        p.y = Math.max(p.r, Math.min(450 - p.r, p.y));
+      }
+      // spawners
+      for (i = 0; i < CFG.things.length; i++) {
+        var th = CFG.things[i];
+        world.spawnT[th.id] -= dt;
+        if (world.spawnT[th.id] <= 0) {
+          world.spawnT[th.id] = Math.max(0.2, th.every);
+          var mul = world.mult[th.id] || 1, v = th.fall * mul;
+          var it = { id: th.id, shape: th.shape, r: th.size, color: th.color, x: 0, y: 0, vx: 0, vy: 0, gone: 0 };
+          if (th.from === 'left') { it.x = -th.size; it.y = T.rand(40, 340); it.vx = v; it.vy = th.drift ? T.rand(-th.drift, th.drift) : 0; }
+          else if (th.from === 'right') { it.x = 800 + th.size; it.y = T.rand(40, 340); it.vx = -v; it.vy = th.drift ? T.rand(-th.drift, th.drift) : 0; }
+          else { it.x = T.rand(th.size, 800 - th.size); it.y = -th.size; it.vy = v; it.vx = th.drift ? T.rand(-th.drift, th.drift) : 0; }
+          world.items.push(it);
+        }
+      }
+      // motion + cull
+      for (i = world.items.length - 1; i >= 0; i--) {
+        var it2 = world.items[i];
+        it2.x += it2.vx * dt; it2.y += it2.vy * dt;
+        if (it2.y > 500 || it2.y < -80 || it2.x < -80 || it2.x > 880) world.items.splice(i, 1);
+      }
+      // on-score triggers (once each)
+      for (i = 0; i < CFG.onscore.length; i++) {
+        if (!world.fired[i] && T.score() >= CFG.onscore[i].n) {
+          world.fired[i] = 1;
+          fire(CFG.onscore[i].acts, null, null);
+          if (T.state() !== 'play') return;
+        }
+      }
+      // touch rules
+      for (i = 0; i < CFG.rules.length; i++) {
+        var rule = CFG.rules[i], As = gather(rule.a), Bs = gather(rule.b), pairs = [];
+        for (j = 0; j < As.length; j++) {
+          for (k = 0; k < Bs.length; k++) {
+            if (As[j] !== Bs[k] && hit(As[j], Bs[k])) pairs.push([As[j], Bs[k]]);
+          }
+        }
+        for (j = 0; j < pairs.length; j++) {
+          if (pairs[j][0].gone || pairs[j][1].gone) continue;
+          fire(rule.acts, pairs[j][0], pairs[j][1]);
+          pairs[j][0].gone = pairs[j][1].gone = 1;
+          if (T.state() !== 'play') return;
+        }
+      }
+    };
+    T._hooks.draw = function () {
+      var id, i;
+      for (id in P) T.shape(P[id].x, P[id].y, P[id].r, P[id].shape, P[id].color);
+      for (i = 0; i < world.items.length; i++) {
+        var it = world.items[i];
+        T.shape(it.x, it.y, it.r, it.shape, it.color);
+      }
+    };
+    T._hooks.demo = function () {
+      var i, j;
+      world.items = [];
+      for (i = 0; i < CFG.things.length; i++) {
+        var th = CFG.things[i];
+        for (j = 0; j < 5; j++) {
+          world.items.push({ id: th.id, shape: th.shape, r: th.size, color: th.color,
+            x: 60 + j * 160, y: 40 + (i * 90 + j * 37) % 300, vx: 0, vy: 0, gone: 0 });
+        }
+      }
+    };
+    say('');
+  }
+
   /* ---------------- wrapper ---------------- */
   function escScript(s) {
     // keep literal </script> sequences from breaking the outer HTML
@@ -439,7 +704,7 @@
 
   function wrap(lang, code, meta) {
     var cdn = CDN[lang];
-    var bootFn = lang === 'py' ? bootPython : bootLua;
+    var bootFn = lang === 'py' ? bootPython : lang === 'frost' ? bootFrost : bootLua;
     var statusMsg = cdn ? cdn.status : '';
     var title = (meta && meta.title) || 'Game';
     var hint = (meta && meta.hint) || '';
@@ -452,7 +717,7 @@
       apiSrc,
       'window.Tundra = installTundra();',
       bootSrc,
-      (lang === 'py' ? 'bootPython(' : 'bootLua(') + JSON.stringify(String(code)).replace(/</g, '\\u003c') + ');',
+      (lang === 'py' ? 'bootPython(' : lang === 'frost' ? 'bootFrost(' : 'bootLua(') + JSON.stringify(String(code)).replace(/</g, '\\u003c') + ');',
       'window.Tundra.setTitle(' + JSON.stringify(title) + ', ' + JSON.stringify(sub) + ', ' + JSON.stringify(hint) + ');',
       'window.Tundra.set_bg(' + JSON.stringify(String(pal[0])) + ', ' + JSON.stringify(String(pal[1] || pal[0])) + ');'
     ].join('\n');
@@ -472,7 +737,7 @@
       '</style></head><body>',
       '<canvas id="cv"></canvas>',
       '<div id="status">' + escScript(statusMsg) + '</div>',
-      '<scr' + 'ipt src="' + cdn.src + '"><' + '/scr' + 'ipt>',
+      cdn ? '<scr' + 'ipt src="' + cdn.src + '"><' + '/scr' + 'ipt>' : '',
       '<scr' + 'ipt>',
       escScript(main),
       '<' + '/scr' + 'ipt>',
@@ -489,7 +754,7 @@
     wrap: wrap,
     API_REF: API_REF,
     metaComment: function (lang) {
-      return lang === 'py' ? '#' : lang === 'lua' ? '--' : '<!--';
+      return lang === 'py' ? '#' : (lang === 'lua' ? '--' : lang === 'frost' ? '#' : '<!--');
     }
   };
 })();
