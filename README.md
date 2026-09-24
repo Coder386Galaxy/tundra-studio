@@ -86,7 +86,7 @@ Three paths, all in the **Publish** tab:
 Tundra Studio lives at the root of the `Tundra-Studio` repo:
 
 ```
-https://coder386galaxy.github.io/Tundra-Studio/
+https://coder386galaxy.github.io/tundra-studio/
 ```
 
 GitHub Pages is enabled from `main` / root. Because the studio and the
