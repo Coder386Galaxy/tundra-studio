@@ -81,6 +81,22 @@ Three paths, all in the **Publish** tab:
   **Export JSON** backup into Tundra Studio, get back a merged `tundra-games-YYYY-MM-DD.json` — Restore that.
 - **C · Manual form** → per-field copy buttons + cover/screenshot file downloads.
 
+## Deployment (GitHub Pages)
+
+Tundra Studio lives at the root of the `Tundra-Studio` repo:
+
+```
+https://coder386galaxy.github.io/Tundra-Studio/
+```
+
+GitHub Pages is enabled from `main` / root. Because the studio and the
+[Tundra Games store](https://coder386galaxy.github.io/Tudra-Publishing/) share
+the `coder386galaxy.github.io` origin, the Publish page's
+**"Publish to Tundra Games"** direct publish is active: it writes the game
+straight into the store's `tundra_games` catalog (localStorage), plus a launch
+post in `tundra_news`. Off that host the button is safely disabled and the
+store-JSON / copy-paste export paths still work from anywhere.
+
 ## Store media
 
 - **📸 Capture** grabs the live game canvas — works with *any* code.
