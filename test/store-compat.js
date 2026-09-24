@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const LIVE_URL = 'https://raw.githubusercontent.com/Coder386Galaxy/Tudra-Publishing/main/index.html';
+const LIVE_URL = 'https://raw.githubusercontent.com/Coder386Galaxy/Tundra-Studio/main/store/index.html'; // live store (Tudra-Publishing repo was removed; hosted in Tundra-Studio/store/)
 const FALLBACK = path.join(__dirname, '..', 'research', 'store-live.html');
 
 let fails = 0;

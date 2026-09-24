@@ -426,7 +426,7 @@ main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 aut
   <div class="top-right">
     <button class="btn ghost sm" id="engineBtn" onclick="TS.openSettings()" title="AI engine — API key">⚙ Engine</button>
     <button class="btn ghost sm" onclick="TS.openMemory()" title="Memory — account, published & unpublished games">🧠 Memory</button>
-    <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+    <a class="btn primary sm" href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Tundra Games ↗</a>
   </div>
 </header>
 
@@ -440,7 +440,7 @@ main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 aut
         <h1>Make games with <em>AI</em>.<br>Ship them to <em>Tundra&nbsp;Games</em>.</h1>
         <p class="lede">Connect any AI model with <b>your API key</b> — it writes the game code, you edit it
           like any normal HTML/JS project, then publish a store-ready title to
-          <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra&nbsp;Games</a>.
+          <a href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Tundra&nbsp;Games</a>.
           Or skip AI entirely and code the whole thing yourself.</p>
         <div class="prompt-card">
           <textarea id="heroPrompt" rows="3" placeholder="e.g. “A cozy flappy game where a little glacier spirit flies through ice caves, easy and chill with a blue palette”…"></textarea>
@@ -606,7 +606,7 @@ Configure it under ⚙ Engine.</pre>
     <div class="page-head">
       <h2>Publish to Tundra Games</h2>
       <p>Your build is packaged in the exact schema of the
-        <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+        <a href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Tundra Games</a>
         catalog (<code>games · news · promos · users · reviews</code>). Pick any path below.</p>
     </div>
 
@@ -614,13 +614,13 @@ Configure it under ⚙ Engine.</pre>
       <div class="panel pub-card direct-card">
         <div class="num">⚡</div>
         <h3>Publish directly to Tundra Games</h3>
-        <p>Tundra Studio and <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games</a>
+        <p>Tundra Studio and <a href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Tundra Games</a>
           share the same site (<code>coder386galaxy.github.io</code>), so the studio can write your title
           <b>straight into the store's catalog on this device</b>. Open the store and it's on the shelf — no files.</p>
         <div id="directStatus" class="fine"></div>
         <div class="row gap">
           <button class="btn primary" id="directBtn" onclick="TS.directPublish()">⚡ Publish directly</button>
-          <a class="btn ghost" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Tundra Games ↗</a>
+          <a class="btn ghost" href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Open Tundra Games ↗</a>
           <button class="btn ghost sm" onclick="TS.directRefresh()">↻ Status</button>
         </div>
       </div>
@@ -655,7 +655,7 @@ Configure it under ⚙ Engine.</pre>
         <div id="copyList" class="copy-list"></div>
         <div class="row gap">
           <button class="btn ghost sm" onclick="TS.downloadMediaFiles()">⬇ cover + shots</button>
-          <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Open Publish tab ↗</a>
+          <a class="btn primary sm" href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Open Publish tab ↗</a>
         </div>
       </div>
 
@@ -680,7 +680,7 @@ Configure it under ⚙ Engine.</pre>
           <li>Share link: store URL + <code>#game=&lt;id&gt;</code></li>
           <li>Players buy/claim it, review it, and track play sessions</li>
         </ul>
-        <a class="btn primary" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Go to Tundra Games ↗</a>
+        <a class="btn primary" href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Go to Tundra Games ↗</a>
       </div>
     </div>
   </section>
@@ -745,7 +745,7 @@ Configure it under ⚙ Engine.</pre>
 
 <footer class="foot">
   <div>TUNDRA <span>STUDIO</span> · the AI game forge for Tundra Publishing</div>
-  <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
+  <a href="https://coder386galaxy.github.io/tundra-studio/store/" target="_blank" rel="noopener">Tundra Games ↗</a>
 </footer>
 
 <!-- memory system: account + published + unpublished games -->
@@ -2711,7 +2711,7 @@ Configure it under ⚙ Engine.</pre>
      Tundra Studio and Tundra Games both live at coder386galaxy.github.io,
      so on that origin the studio can write the store's own keys directly. */
   const STORE_HOST = 'coder386galaxy.github.io';
-  const STORE_URL = 'https://coder386galaxy.github.io/Tudra-Publishing/';
+  const STORE_URL = 'https://coder386galaxy.github.io/tundra-studio/store/';
 
   function lsRead(k, d) {
     try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }

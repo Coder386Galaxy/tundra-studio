@@ -1,6 +1,6 @@
 # Tundra Studio
 
-**The AI game forge for [Tundra Games](https://coder386galaxy.github.io/Tudra-Publishing/).**
+**The AI game forge for [Tundra Games](https://coder386galaxy.github.io/tundra-studio/store/).**
 
 Connect any AI model with **your API key** — it writes the game in **the coding language you pick**,
 you edit it like any normal project, then publish a store-ready title in the exact Tundra Games
@@ -104,7 +104,7 @@ https://coder386galaxy.github.io/tundra-studio/
 ```
 
 GitHub Pages is enabled from `main` / root. Because the studio and the
-[Tundra Games store](https://coder386galaxy.github.io/Tudra-Publishing/) share
+[Tundra Games store](https://coder386galaxy.github.io/tundra-studio/store/) share
 the `coder386galaxy.github.io` origin, the Publish page's
 **"Publish to Tundra Games"** direct publish is active: it writes the game
 straight into the store's `tundra_games` catalog (localStorage), plus a launch

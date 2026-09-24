@@ -26,15 +26,21 @@ FILES
   store-source.html          snapshot of the store source it patches
   build.py                   rebuilds index.html (python3 build.py)
 
+NOTE: the original Tudra-Publishing repo was removed. The store now lives
+inside Tundra-Studio at https://coder386galaxy.github.io/tundra-studio/store/
+(source: store/index.html in this repo — the patch is pre-applied, and
+store-patch/build.py keeps that copy in sync). Steps below only matter
+if you deploy the store somewhere else.
+
 HOW TO INSTALL — option A (web upload, 60 seconds)
-1. Open https://github.com/Coder386Galaxy/Tudra-Publishing
+1. Open the target store repo on GitHub
 2. Click index.html -> the pencil (Edit file) or Add file -> Upload files
 3. Replace the contents with this folder's index.html
 4. Commit directly to main
-5. Live in ~1 minute at https://coder386galaxy.github.io/Tudra-Publishing/
+5. Live in ~1 minute on that repo's Pages URL
 
 HOW TO INSTALL — option B (assistant pushes it)
-Add the Tudra-Publishing repo to the fine-grained token's access with
+Add the target repo to the fine-grained token's access with
 Contents: Read and write, send the token, and it will be pushed + verified.
 
 HOW TO PLAY A GAME NOW

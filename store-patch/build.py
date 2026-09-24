@@ -64,3 +64,9 @@ s = s[:idx] + block + s[idx:]
 
 open(os.path.join(HERE, 'index.html'), 'w', encoding='utf-8').write(s)
 print('built store-patch/index.html:', len(s), 'bytes')
+
+# keep the hosted store copy in sync (served at /tundra-studio/store/)
+hosted = os.path.join(HERE, '..', 'store', 'index.html')
+os.makedirs(os.path.dirname(hosted), exist_ok=True)
+open(hosted, 'w', encoding='utf-8').write(s)
+print('copied store/index.html (hosted store)')

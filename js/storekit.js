@@ -209,7 +209,7 @@
      Tundra Studio and Tundra Games both live at coder386galaxy.github.io,
      so on that origin the studio can write the store's own keys directly. */
   const STORE_HOST = 'coder386galaxy.github.io';
-  const STORE_URL = 'https://coder386galaxy.github.io/Tudra-Publishing/';
+  const STORE_URL = 'https://coder386galaxy.github.io/tundra-studio/store/';
 
   function lsRead(k, d) {
     try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }
