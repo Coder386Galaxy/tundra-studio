@@ -1,5 +1,6 @@
 // store-patch test: verifies the ready-to-upload store build
-// (download-only delivery + Tundra Checkout) and that build.py stays reproducible.
+// (download-gate -> in-store player + Tundra Checkout with payment)
+// and that build.py stays reproducible.
 // Run from the repo root: node test/store-patch.js
 const fs = require('fs');
 const vm = require('vm');
@@ -18,37 +19,46 @@ if (!fs.existsSync(BUILD) || !fs.existsSync(SRC)) {
 const s = fs.readFileSync(BUILD, 'utf8');
 const src = fs.readFileSync(SRC, 'utf8');
 
-/* ---- 1) download-only delivery ---- */
-if (!s.includes('>Download</button>')) fail('store page missing Download button');
-if (!s.includes("?'Stop':'Download'")) fail('library missing Download button');
-if (!s.includes('function dl(g)')) fail('dl() helper missing');
-if (!s.includes('dl(g);toast(`Downloaded')) fail('launch does not download the game');
-if (!s.includes('Download ${esc(x.title)}')) fail('receipt missing per-game Download buttons');
+/* ---- 1) games load for real: download gate -> player ---- */
+if (!s.includes('TundraStore.btns')) fail('library buttons missing');
+if (!s.includes('TundraStore.detailBtn')) fail('detail button missing');
+if (!s.includes('function install(id)')) fail('install (download gate) missing');
+if (!s.includes('function launch(id)')) fail('launch missing');
+if (!s.includes('press Play to load it')) fail('download-gate toast missing');
+if (!s.includes("createElement('iframe')")) fail('game player iframe missing');
+if (!s.includes('allow-scripts allow-same-origin')) fail('player sandbox missing');
+if (!s.includes('function play(id){return (window.TundraStore')) fail('play() does not delegate to player');
 
-/* ---- 2) Tundra Checkout addon ---- */
+/* ---- 2) no free money: instant top-ups must be gone ---- */
+if (s.includes('onclick="addFunds(')) fail('instant addFunds buttons still present');
+if ((s.match(/onclick="TundraCheckout\.open\(/g) || []).length !== 5) fail('preset buttons must route through checkout');
+
+/* ---- 3) checkout requires payment details ---- */
 if (!s.includes('TundraCheckout')) fail('checkout addon missing');
-if (!s.includes('Add funds')) fail('checkout entry points missing');
+if (!s.includes('Name on payment method')) fail('payment details form missing');
+if (!s.includes('function payValid()')) fail('payment validation missing');
+if (!s.includes('CVC')) fail('CVC field missing');
 
-/* ---- 3) HTML sanity ---- */
+/* ---- 4) HTML sanity ---- */
 const opens = (s.toLowerCase().match(/<script/g) || []).length;
 const closes = (s.toLowerCase().match(/<\/script>/g) || []).length;
 if (opens !== closes) fail('script tags unbalanced: ' + opens + ' open / ' + closes + ' close');
 if (!s.trimEnd().toLowerCase().endsWith('</html>')) fail('html tail broken');
 
-/* ---- 4) build.py anchors stay reproducible ---- */
+/* ---- 5) build.py anchors stay reproducible ---- */
 const anchors = [
-  ['>Play</button>', 'detail label'],
-  ["?'Stop':'Play'", 'library label'],
-  ['function play(id){', 'play() definition'],
-  ['save();toast(`Launching ${g.title}`);renderLibrary();', 'play() body'],
-  ['Purchase complete', 'purchase modal']
+  ['display:flex;gap:10px;flex-wrap:wrap', 'library row', 1],
+  ['const buyBtn=owned(id)?', 'detail buy button', 1],
+  ['onclick="addFunds(', 'instant top-ups', 5],
+  ['function play(id){', 'play() definition', 1],
+  ['Purchase complete', 'purchase modal', 1]
 ];
-for (const [key, label] of anchors) {
+for (const [key, label, want] of anchors) {
   const n = src.split(key).length - 1;
-  if (n !== 1) fail('build anchor "' + label + '" occurs ' + n + 'x in store-source.html (want 1)');
+  if (n !== want) fail('build anchor "' + label + '" occurs ' + n + 'x in store-source.html (want ' + want + ')');
 }
 
-/* ---- 5) inline scripts compile ---- */
+/* ---- 6) inline scripts compile ---- */
 const blocks = [];
 const re = /<script>([\s\S]*?)<\/script>/gi;
 let m;

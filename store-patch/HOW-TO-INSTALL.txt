@@ -4,25 +4,25 @@ TUNDRA GAMES STORE PATCH — install guide
 WHAT THIS ADDS to the store (index.html in this folder = your current
 store + everything below):
 
-1. DOWNLOAD-ONLY GAME DELIVERY
-   You have to download the game to play it (like a real game store):
-   - Library: the big button is "Download" — saves the game as a
-     single .html file (double-click to play, works offline)
-   - Store page of an owned game: "Download"
-   - After purchase: "Download <title>" buttons right in the receipt
-   Games published from Tundra Studio are fully self-contained files
-   (with the 10s Tundra boot screen), so a download is the whole game.
+1. GAMES ACTUALLY LOAD — download gate + player
+   - Not downloaded yet: the button is "Download" (also in the purchase
+     receipt). Downloading saves the single-file game AND installs it.
+   - Downloaded: "Play" opens the game in the store's player (Esc or
+     Close exits). You have to download the game before you can play.
+   - Sessions, play time, saves and achievements keep working.
 
-2. TUNDRA CHECKOUT (from before) — Steam-style wallet top-up:
-   "Add funds" buttons, 4-step checkout (Amount -> Payment -> Review ->
-   Receipt), and top-up-during-purchase when the wallet can't cover the
-   cart (then the purchase completes automatically). Simulation only —
-   fictional payment methods, nothing real is charged.
+2. NO FREE MONEY — Tundra Checkout is required
+   The old instant "+$5 … +$100" wallet buttons are gone. Every top-up
+   goes through Tundra Checkout: Amount -> Payment method + payment
+   details (16-digit number, expiry, CVC — validated) -> Review -> Receipt.
+   Buying a game you can't afford tops up the shortfall first and then
+   completes the purchase. SIMULATION ONLY — nothing real is charged.
 
 FILES
   index.html                 the complete store — upload this one
-  tundra-checkout-addon.js   the checkout addon source (already built in)
-  build.py                   rebuilds index.html from the live store source
+  tundra-checkout-addon.js   the addon source (already built in)
+  store-source.html          snapshot of the store source it patches
+  build.py                   rebuilds index.html (python3 build.py)
 
 HOW TO INSTALL — option A (web upload, 60 seconds)
 1. Open https://github.com/Coder386Galaxy/Tudra-Publishing
@@ -36,5 +36,5 @@ Add the Tudra-Publishing repo to the fine-grained token's access with
 Contents: Read and write, send the token, and it will be pushed + verified.
 
 HOW TO PLAY A GAME NOW
-Buy or claim it -> "Download <title>" (or Library -> Download) ->
-open the downloaded .html file. It boots for ~10 seconds and plays.
+Buy or claim it -> "Download" (required once) -> "Play" -> the game
+loads in the player: ~10 second Tundra boot, then the title screen.
