@@ -381,3 +381,13 @@ main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 aut
   .how-strip{grid-template-columns:1fr}
   .guide-grid{grid-template-columns:1fr}
 }
+
+/* ---- memory system (account + published + unpublished games) ---- */
+.mem-sec{margin-bottom:14px}
+.mem-sec h4{margin:0 0 6px;font-size:13px}
+.mem-n{border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:1px 8px;font-size:11px;opacity:.8}
+.mem-row{display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px}
+.mem-row b{font-size:13px}
+.mem-row small{opacity:.7;font-size:11px}
+.mem-empty{opacity:.6}
+.mem-note{width:100%;box-sizing:border-box;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 8px;font:12px/1.5 system-ui,sans-serif;resize:vertical}

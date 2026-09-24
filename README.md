@@ -66,6 +66,7 @@ the store-kit Title field, the metadata comment or Frost's `title` line — is w
 | `js/templates.js` | Hand-written starters per language (starter game, empty file) — zero AI |
 | `js/editor.js` | Normal code editor (JavaScript, Python, Lua, Frost highlighting) |
 | `js/storekit.js` | Publishing kit — schema-locked to the store's `New Title` form and `Export/Restore` JSON |
+| `js/memory.js` | **Memory system** — AI memory, notes board, never-lose vault for the account + published + unpublished games |
 | `js/app.js` | Studio glue: language state, title chooser, preview, canvas-grab screenshots, store kit, projects |
 | `Tundra-Studio.html` | Single-file bundle (`python3 bundle.py`) |
 | `store-patch/` | Ready-to-upload Tundra Games store build: **download-only delivery** + Steam-style wallet checkout (`store-patch/HOW-TO-INSTALL.txt`) |

@@ -214,7 +214,7 @@
   function generate(cfg, prompt, lang) {
     lang = lang || 'js';
     return chat(cfg, [
-      { role: 'system', content: systemFor(lang) },
+      { role: 'system', content: systemFor(lang) + (window.TSMemory ? '\n\n' + window.TSMemory.aiMemory() : '') },
       { role: 'user', content: String(prompt || '').trim() }
     ]).then(function (r) {
       var out = finalize(lang, r.text);
@@ -226,7 +226,7 @@
   function modify(cfg, prompt, code, lang) {
     lang = lang || 'js';
     return chat(cfg, [
-      { role: 'system', content: sysEdit(lang) },
+      { role: 'system', content: sysEdit(lang) + (window.TSMemory ? '\n\n' + window.TSMemory.aiMemory() : '') },
       { role: 'user', content: 'CHANGE REQUEST:\n' + String(prompt || '').trim() + '\n\nCURRENT CODE:\n' + String(code || '') }
     ]).then(function (r) {
       var out = finalize(lang, r.text);

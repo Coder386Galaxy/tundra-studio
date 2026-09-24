@@ -13,10 +13,12 @@ store + everything below):
 
 2. NO FREE MONEY — Tundra Checkout is required
    The old instant "+$5 … +$100" wallet buttons are gone. Every top-up
-   goes through Tundra Checkout: Amount -> Payment method + payment
-   details (16-digit number, expiry, CVC — validated) -> Review -> Receipt.
-   Buying a game you can't afford tops up the shortfall first and then
-   completes the purchase. SIMULATION ONLY — nothing real is charged.
+   goes through Tundra Checkout: Amount -> Payment method (Visa,
+   Mastercard, American Express, PayPal) + payment details (card number,
+   expiry, CVC — validated) -> Review -> Receipt. Buying a game you
+   can't afford tops up the shortfall first and then completes the
+   purchase. The demo store processes nothing real — no card is charged
+   or stored.
 
 FILES
   index.html                 the complete store — upload this one

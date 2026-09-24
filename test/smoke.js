@@ -282,6 +282,58 @@ try {
   }
 } catch (e) { fail('boot suite error: ' + e.message); }
 
+/* ---------- 5d) memory system: AI memory + notes + vault ---------- */
+try {
+  const store = {};
+  const sbM = {
+    window: null,
+    localStorage: {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; }
+    },
+    sessionStorage: { getItem: () => null, setItem: () => { } },
+    document: {
+      createElement: () => ({ style: {}, click() { }, remove() { } }),
+      body: { appendChild() { } },
+      head: { appendChild() { } }
+    },
+    URL: { createObjectURL: () => 'blob:x', revokeObjectURL() { } },
+    Blob: function () { },
+    console, JSON, Date, Math, Array, Object, String, Number, RegExp, isFinite, parseInt, parseFloat
+  };
+  sbM.window = sbM;
+  vm.createContext(sbM);
+  vm.runInContext(fs.readFileSync('js/memory.js', 'utf8'), sbM, { filename: 'memory.js' });
+  const TM = sbM.window.TSMemory;
+  if (!TM) fail('memory: TSMemory missing');
+  else {
+    store.tundra_session = 'aurora';
+    store.tundra_users = JSON.stringify({ aurora: { state: { name: 'Aurora', wallet: 12, owned: ['g1'] } } });
+    store.tundra_games = JSON.stringify([{ id: 'starfall-1', title: 'Starfall Catch', price: 0, tags: ['Arcade'], date: '2026-09-01' }]);
+    store.tundra_studio_projects = JSON.stringify([
+      { pid: 'p1', title: 'Starfall Catch', when: '2026-09-20', lang: 'frost', code: '' },
+      { pid: 'p2', title: 'Boss Dungeon', when: '2026-09-22', lang: 'py', code: '' }
+    ]);
+    const c = TM.collect();
+    if (c.published.length !== 1 || c.published[0].title !== 'Starfall Catch') fail('memory: published classification');
+    if (c.unpublished.length !== 1 || c.unpublished[0].title !== 'Boss Dungeon') fail('memory: unpublished classification');
+    if (c.account.user !== 'aurora' || c.account.wallet !== 12) fail('memory: account info');
+    TM.setNote('game', 'p2', 'add a boss fight');
+    TM.setNote('account', '', 'ship weekly');
+    const ai = TM.aiMemory();
+    if (!ai.includes('Boss Dungeon') || !ai.includes('Starfall Catch')) fail('memory: aiMemory lists games');
+    if (!ai.includes('add a boss fight') || !ai.includes('ship weekly')) fail('memory: aiMemory carries notes');
+    if (!ai.includes('@aurora')) fail('memory: aiMemory carries account');
+    const v = TM.snapshot();
+    if (!v || v.v !== 1 || v.drafts.length !== 2 || !v.notes) fail('memory: vault snapshot shape');
+    const res = TM.restore(JSON.stringify(v));
+    if (!res.ok) fail('memory: vault restore failed: ' + res.err);
+    if (TM.getNote('game', 'p2') !== 'add a boss fight') fail('memory: notes survive restore');
+    console.log('ok: memory system (AI memory + notes + vault)');
+  }
+} catch (e) { fail('memory suite: ' + e.message); }
+
 /* ---------- 6) py/lua wrap builds boot headlessly (API + boot fns) ---------- */
 try {
   const w = RNR.wrap('py', sneaky, { title: 'T' });

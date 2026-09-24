@@ -30,6 +30,7 @@
   </nav>
   <div class="top-right">
     <button class="btn ghost sm" id="engineBtn" onclick="TS.openSettings()" title="AI engine — API key">⚙ Engine</button>
+    <button class="btn ghost sm" onclick="TS.openMemory()" title="Memory — account, published & unpublished games">🧠 Memory</button>
     <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
   </div>
 </header>
@@ -352,6 +353,23 @@ Configure it under ⚙ Engine.</pre>
   <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
 </footer>
 
+<!-- memory system: account + published + unpublished games -->
+<div class="modal" id="memModal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="TS.closeMemory()">✕</button>
+    <h3>🧠 Memory</h3>
+    <p class="fine">Memory for your account, your published games and your unpublished games.
+      The AI reads it before every reply, your notes live here, and the vault keeps everything safe.</p>
+    <div id="memBody"></div>
+    <div class="row gap" style="margin-top:12px">
+      <button class="btn primary sm" onclick="TS.memDownload()">⬇ Backup memory</button>
+      <label class="btn ghost sm" style="cursor:pointer">⬆ Restore<input type="file" accept="application/json,.json" style="display:none" onchange="TS.memRestore(this)"></label>
+      <button class="btn ghost sm" onclick="TS.closeMemory()">Close</button>
+    </div>
+    <p class="fine" id="memAuto"></p>
+  </div>
+</div>
+
 <!-- settings modal: the only AI = your API key -->
 <div class="modal" id="settingsModal">
   <div class="modal-box">
@@ -377,6 +395,7 @@ Configure it under ⚙ Engine.</pre>
 <script src="js/templates.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/storekit.js"></script>
+<script src="js/memory.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

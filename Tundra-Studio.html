@@ -391,6 +391,16 @@ main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 aut
   .guide-grid{grid-template-columns:1fr}
 }
 
+/* ---- memory system (account + published + unpublished games) ---- */
+.mem-sec{margin-bottom:14px}
+.mem-sec h4{margin:0 0 6px;font-size:13px}
+.mem-n{border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:1px 8px;font-size:11px;opacity:.8}
+.mem-row{display:grid;gap:4px;padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px}
+.mem-row b{font-size:13px}
+.mem-row small{opacity:.7;font-size:11px}
+.mem-empty{opacity:.6}
+.mem-note{width:100%;box-sizing:border-box;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 8px;font:12px/1.5 system-ui,sans-serif;resize:vertical}
+
 </style>
 </head>
 <body>
@@ -415,6 +425,7 @@ main{flex:1;position:relative;z-index:1;max-width:1560px;width:100%;margin:0 aut
   </nav>
   <div class="top-right">
     <button class="btn ghost sm" id="engineBtn" onclick="TS.openSettings()" title="AI engine — API key">⚙ Engine</button>
+    <button class="btn ghost sm" onclick="TS.openMemory()" title="Memory — account, published & unpublished games">🧠 Memory</button>
     <a class="btn primary sm" href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
   </div>
 </header>
@@ -737,6 +748,23 @@ Configure it under ⚙ Engine.</pre>
   <a href="https://coder386galaxy.github.io/Tudra-Publishing/" target="_blank" rel="noopener">Tundra Games ↗</a>
 </footer>
 
+<!-- memory system: account + published + unpublished games -->
+<div class="modal" id="memModal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="TS.closeMemory()">✕</button>
+    <h3>🧠 Memory</h3>
+    <p class="fine">Memory for your account, your published games and your unpublished games.
+      The AI reads it before every reply, your notes live here, and the vault keeps everything safe.</p>
+    <div id="memBody"></div>
+    <div class="row gap" style="margin-top:12px">
+      <button class="btn primary sm" onclick="TS.memDownload()">⬇ Backup memory</button>
+      <label class="btn ghost sm" style="cursor:pointer">⬆ Restore<input type="file" accept="application/json,.json" style="display:none" onchange="TS.memRestore(this)"></label>
+      <button class="btn ghost sm" onclick="TS.closeMemory()">Close</button>
+    </div>
+    <p class="fine" id="memAuto"></p>
+  </div>
+</div>
+
 <!-- settings modal: the only AI = your API key -->
 <div class="modal" id="settingsModal">
   <div class="modal-box">
@@ -974,7 +1002,7 @@ Configure it under ⚙ Engine.</pre>
   function generate(cfg, prompt, lang) {
     lang = lang || 'js';
     return chat(cfg, [
-      { role: 'system', content: systemFor(lang) },
+      { role: 'system', content: systemFor(lang) + (window.TSMemory ? '\n\n' + window.TSMemory.aiMemory() : '') },
       { role: 'user', content: String(prompt || '').trim() }
     ]).then(function (r) {
       var out = finalize(lang, r.text);
@@ -986,7 +1014,7 @@ Configure it under ⚙ Engine.</pre>
   function modify(cfg, prompt, code, lang) {
     lang = lang || 'js';
     return chat(cfg, [
-      { role: 'system', content: sysEdit(lang) },
+      { role: 'system', content: sysEdit(lang) + (window.TSMemory ? '\n\n' + window.TSMemory.aiMemory() : '') },
       { role: 'user', content: 'CHANGE REQUEST:\n' + String(prompt || '').trim() + '\n\nCURRENT CODE:\n' + String(code || '') }
     ]).then(function (r) {
       var out = finalize(lang, r.text);
@@ -2483,7 +2511,7 @@ Configure it under ⚙ Engine.</pre>
   'use strict';
 
   const AGES = ['', 'E', 'E10+', 'T', 'M', 'AO'];
-  const PLATFORMS = ['Windows', 'Mac', 'Linux'];
+  const PLATFORMS = ['Windows', 'Mac', 'Linux', 'Browser'];
 
   function today() {
     const d = new Date();
@@ -2578,7 +2606,7 @@ Configure it under ⚙ Engine.</pre>
     if (!(fields.price >= 0)) errs.push('Price must be ≥ 0 (0 = free)');
     if (!fields.date || !/^\d{4}-\d{2}-\d{2}$/.test(fields.date)) errs.push('Release date must be YYYY-MM-DD');
     if (AGES.indexOf(fields.age) < 0) errs.push('Age rating must be one of ' + AGES.join('/'));
-    if (!(fields.platforms || []).every(p => PLATFORMS.indexOf(p) >= 0)) errs.push('Platforms must be Windows/Mac/Linux');
+    if (!(fields.platforms || []).every(p => PLATFORMS.indexOf(p) >= 0)) errs.push('Platforms must be Windows/Mac/Linux/Browser');
     return errs;
   }
 
@@ -2603,6 +2631,8 @@ Configure it under ⚙ Engine.</pre>
       discount: 0,
       // extension fields — ignored by the store UI, preserved in catalog JSON
       gameHTML: gameHTML || null,
+      code: gameHTML || null,          // official: in-store player runs g.code via srcdoc
+      codeUpdated: new Date().toISOString(),
       madeWith: 'Tundra Studio'
     };
   }
@@ -3347,6 +3377,58 @@ Configure it under ⚙ Engine.</pre>
     sync();
   }
 
+  /* ---------- memory: account + published + unpublished games ---------- */
+  function memAutoLine() {
+    const b = window.TSMemory && TSMemory.lastBackup();
+    return b ? 'Vault: auto-saved ' + new Date(b).toLocaleString() + ' — nothing is lost.'
+      : 'Vault: snapshots automatically when you write notes or save projects.';
+  }
+  function renderMemory() {
+    const c = TSMemory.collect();
+    const noteBox = (kind, id, text) =>
+      '<textarea class="mem-note" rows="2" placeholder="Write a note…" onchange="TS.setMemNote(\'' + kind + '\',\'' + id + '\',this.value)">' + esc(text || '') + '</textarea>';
+    let h = '<div class="mem-sec"><h4>👤 Account</h4><small>' +
+      esc(c.account.user ? '@' + c.account.user + (c.account.name ? ' · ' + c.account.name : '') + ' · wallet $' + c.account.wallet.toFixed(2) + ' · ' + c.account.owned + ' games owned'
+        : 'No store account found in this browser (open Tundra Games on this origin to link one).') +
+      '</small>' + noteBox('account', '', c.account.note) + '</div>';
+    h += '<div class="mem-sec"><h4>📦 Published games <span class="mem-n">' + c.published.length + '</span></h4>';
+    h += c.published.length ? c.published.map(g =>
+      '<div class="mem-row"><b>' + esc(g.title) + '</b><small>$' + g.price + ' · ' + esc((g.tags || []).join(', ')) + '</small>' + noteBox('game', g.id, g.note) + '</div>').join('')
+      : '<small class="mem-empty">None yet — publish from the Publish page.</small>';
+    h += '</div><div class="mem-sec"><h4>🌱 Unpublished games <span class="mem-n">' + c.unpublished.length + '</span></h4>';
+    h += c.unpublished.length ? c.unpublished.map(g =>
+      '<div class="mem-row"><b>' + esc(g.title) + '</b><small>' + esc(g.lang) + ' · ' + esc(g.when ? new Date(g.when).toLocaleDateString() : '') + '</small>' + noteBox('game', g.pid, g.note) + '</div>').join('')
+      : '<small class="mem-empty">None — every saved project is on the store.</small>';
+    h += '</div>';
+    $('#memBody').innerHTML = h;
+    $('#memAuto').textContent = memAutoLine();
+  }
+  TS.openMemory = function () {
+    try { TSMemory.snapshot(); } catch (e) {}
+    renderMemory();
+    $('#memModal').classList.add('on');
+  };
+  TS.closeMemory = function () { $('#memModal').classList.remove('on'); };
+  TS.setMemNote = function (kind, id, v) {
+    try { TSMemory.setNote(kind, id, v); toast('🧠 Note saved'); } catch (e) {}
+    try { $('#memAuto').textContent = memAutoLine(); } catch (e) {}
+  };
+  TS.memDownload = function () {
+    try { const n = TSMemory.download(); toast('⬇ ' + n); } catch (e) { toast('Backup failed'); }
+  };
+  TS.memRestore = function (inp) {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const res = TSMemory.restore(String(r.result || ''));
+      if (!res.ok) return toast('Restore failed: ' + res.err);
+      toast('🧠 Memory restored — reloading');
+      setTimeout(() => location.reload(), 600);
+    };
+    r.readAsText(f);
+  };
+
   /* ---------- download ---------- */
   function downloadText(name, text) {
     const blob = new Blob([text], { type: name.endsWith('.html') ? 'text/html' : 'text/plain' });
@@ -3393,6 +3475,7 @@ Configure it under ⚙ Engine.</pre>
     const df = $('#dirtyFlag'); if (df) df.textContent = '';
     toast('💾 Project saved');
     renderProjects();
+    try { if (window.TSMemory) TSMemory.snapshot(); } catch (e) {}
   };
 
   function renderProjects() {

@@ -626,6 +626,58 @@
     sync();
   }
 
+  /* ---------- memory: account + published + unpublished games ---------- */
+  function memAutoLine() {
+    const b = window.TSMemory && TSMemory.lastBackup();
+    return b ? 'Vault: auto-saved ' + new Date(b).toLocaleString() + ' — nothing is lost.'
+      : 'Vault: snapshots automatically when you write notes or save projects.';
+  }
+  function renderMemory() {
+    const c = TSMemory.collect();
+    const noteBox = (kind, id, text) =>
+      '<textarea class="mem-note" rows="2" placeholder="Write a note…" onchange="TS.setMemNote(\'' + kind + '\',\'' + id + '\',this.value)">' + esc(text || '') + '</textarea>';
+    let h = '<div class="mem-sec"><h4>👤 Account</h4><small>' +
+      esc(c.account.user ? '@' + c.account.user + (c.account.name ? ' · ' + c.account.name : '') + ' · wallet $' + c.account.wallet.toFixed(2) + ' · ' + c.account.owned + ' games owned'
+        : 'No store account found in this browser (open Tundra Games on this origin to link one).') +
+      '</small>' + noteBox('account', '', c.account.note) + '</div>';
+    h += '<div class="mem-sec"><h4>📦 Published games <span class="mem-n">' + c.published.length + '</span></h4>';
+    h += c.published.length ? c.published.map(g =>
+      '<div class="mem-row"><b>' + esc(g.title) + '</b><small>$' + g.price + ' · ' + esc((g.tags || []).join(', ')) + '</small>' + noteBox('game', g.id, g.note) + '</div>').join('')
+      : '<small class="mem-empty">None yet — publish from the Publish page.</small>';
+    h += '</div><div class="mem-sec"><h4>🌱 Unpublished games <span class="mem-n">' + c.unpublished.length + '</span></h4>';
+    h += c.unpublished.length ? c.unpublished.map(g =>
+      '<div class="mem-row"><b>' + esc(g.title) + '</b><small>' + esc(g.lang) + ' · ' + esc(g.when ? new Date(g.when).toLocaleDateString() : '') + '</small>' + noteBox('game', g.pid, g.note) + '</div>').join('')
+      : '<small class="mem-empty">None — every saved project is on the store.</small>';
+    h += '</div>';
+    $('#memBody').innerHTML = h;
+    $('#memAuto').textContent = memAutoLine();
+  }
+  TS.openMemory = function () {
+    try { TSMemory.snapshot(); } catch (e) {}
+    renderMemory();
+    $('#memModal').classList.add('on');
+  };
+  TS.closeMemory = function () { $('#memModal').classList.remove('on'); };
+  TS.setMemNote = function (kind, id, v) {
+    try { TSMemory.setNote(kind, id, v); toast('🧠 Note saved'); } catch (e) {}
+    try { $('#memAuto').textContent = memAutoLine(); } catch (e) {}
+  };
+  TS.memDownload = function () {
+    try { const n = TSMemory.download(); toast('⬇ ' + n); } catch (e) { toast('Backup failed'); }
+  };
+  TS.memRestore = function (inp) {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const res = TSMemory.restore(String(r.result || ''));
+      if (!res.ok) return toast('Restore failed: ' + res.err);
+      toast('🧠 Memory restored — reloading');
+      setTimeout(() => location.reload(), 600);
+    };
+    r.readAsText(f);
+  };
+
   /* ---------- download ---------- */
   function downloadText(name, text) {
     const blob = new Blob([text], { type: name.endsWith('.html') ? 'text/html' : 'text/plain' });
@@ -672,6 +724,7 @@
     const df = $('#dirtyFlag'); if (df) df.textContent = '';
     toast('💾 Project saved');
     renderProjects();
+    try { if (window.TSMemory) TSMemory.snapshot(); } catch (e) {}
   };
 
   function renderProjects() {
