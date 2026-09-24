@@ -32,7 +32,7 @@
     var W = 800, H = 450;
     cv.width = W; cv.height = H;
 
-    var state = 'title', score = 0, lives = 3, best = 0;
+    var state = 'boot', score = 0, lives = 3, best = 0, bootT = 0;
     var titleText = 'Game', subText = '', hintText = '';
     var bg1 = '#1B1F23', bg2 = '#0a0d10';
     var keys = {}, edge = {}, ptr = { x: W / 2, y: H / 2, down: false }, tap = false;
@@ -109,7 +109,8 @@
       var k = norm(e.key);
       keys[k] = true; edge[k] = true;
       if (k === 'm') muted = !muted;
-      if (state === 'title' && (k === 'space' || k === 'enter')) start();
+      if (state === 'boot') { if (k === 'space' || k === 'enter') state = 'title'; }
+      else if (state === 'title' && (k === 'space' || k === 'enter')) start();
       else if (state === 'over' && (k === 'r' || k === 'space' || k === 'enter')) start();
       else if ((state === 'play' || state === 'pause') && (k === 'p' || k === 'escape')) state = state === 'play' ? 'pause' : 'play';
     });
@@ -124,7 +125,8 @@
     cv.addEventListener('pointerdown', function (e) {
       var p = toLocal(e);
       ptr.x = p.x; ptr.y = p.y; ptr.down = true; tap = true;
-      if (state === 'title' || state === 'over') start();
+      if (state === 'boot') state = 'title';
+      else if (state === 'title' || state === 'over') start();
     });
     cv.addEventListener('pointermove', function (e) {
       var p = toLocal(e); ptr.x = p.x; ptr.y = p.y;
@@ -133,7 +135,7 @@
     window.addEventListener('blur', function () { if (state === 'play') state = 'pause'; });
 
     /* ---- game state ---- */
-    function setTitle(a, b, c) { titleText = String(a || 'Game'); subText = String(b || ''); hintText = String(c || ''); }
+    function setTitle(a, b, c) { if (a != null) titleText = String(a); if (b != null) subText = String(b); if (c != null) hintText = String(c); }
     function set_bg(a, b) { bg1 = a || bg1; bg2 = b || bg2; }
     function start() {
       score = 0; lives = 3; parts = []; tap = false;
@@ -180,7 +182,7 @@
       }
       paintBg();
       if (state === 'play' && hooks.update) hooks.update(dt);
-      if (hooks.draw && state !== 'title') hooks.draw();
+      if (hooks.draw && state !== 'title' && state !== 'boot') hooks.draw();
       if (state === 'play') {
         for (var i = parts.length - 1; i >= 0; i--) {
           var p = parts[i];
@@ -197,7 +199,18 @@
         ctx.globalAlpha = 1;
         hud();
       }
-      if (state === 'title') {
+      if (state === 'boot') {
+        bootT += dt;
+        var bp = Math.min(1, bootT / 10);
+        text('❄', W / 2, H / 2 - 96, 56, '#8fd8ff', 'center');
+        text('TUNDRA', W / 2, H / 2 - 30, 50, '#F5FAFF', 'center');
+        text('TUNDRA GAMES', W / 2, H / 2 + 4, 13, '#7A8B94', 'center');
+        rect(W / 2 - 160, H / 2 + 40, 320, 8, 'rgba(255,255,255,0.12)');
+        rect(W / 2 - 160, H / 2 + 40, 320 * bp, 8, '#8fd8ff');
+        text('Starting ' + titleText + '…', W / 2, H / 2 + 74, 15, '#cfe0ea', 'center');
+        text('PRESS SPACE OR TAP TO SKIP', W / 2, H - 36, 12, '#7A8B94', 'center');
+        if (bootT >= 10) state = 'title';
+      } else if (state === 'title') {
         overlay(titleText, subText, 'PRESS SPACE OR TAP TO START' + (hintText ? '  ·  ' + hintText : ''));
       } else if (state === 'pause') {
         overlay('PAUSED', titleText, 'PRESS P OR ESC TO RESUME');
@@ -537,6 +550,10 @@
     }
     if (!CFG.players.length) CFG.players.push({ id: 'orb', shape: 'circle', size: 24, color: '#8fd8ff', x: 400, y: 380 });
 
+    // the title you chose shows right away (boot + title screens)
+    if (CFG.title) T.setTitle(CFG.title);
+    if (CFG.bg1) T.set_bg(CFG.bg1, CFG.bg2 || CFG.bg1);
+
     /* ---- world helpers ---- */
     function gather(id) {
       var out = [], i;
@@ -716,10 +733,10 @@
     var main = [
       apiSrc,
       'window.Tundra = installTundra();',
-      bootSrc,
-      (lang === 'py' ? 'bootPython(' : lang === 'frost' ? 'bootFrost(' : 'bootLua(') + JSON.stringify(String(code)).replace(/</g, '\\u003c') + ');',
       'window.Tundra.setTitle(' + JSON.stringify(title) + ', ' + JSON.stringify(sub) + ', ' + JSON.stringify(hint) + ');',
-      'window.Tundra.set_bg(' + JSON.stringify(String(pal[0])) + ', ' + JSON.stringify(String(pal[1] || pal[0])) + ');'
+      'window.Tundra.set_bg(' + JSON.stringify(String(pal[0])) + ', ' + JSON.stringify(String(pal[1] || pal[0])) + ');',
+      bootSrc,
+      (lang === 'py' ? 'bootPython(' : lang === 'frost' ? 'bootFrost(' : 'bootLua(') + JSON.stringify(String(code)).replace(/</g, '\\u003c') + ');'
     ].join('\n');
 
     return [

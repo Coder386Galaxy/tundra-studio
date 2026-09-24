@@ -203,13 +203,15 @@
     if (!editor) return '';
     const code = editor.getValue();
     if (TS.lang === 'js') return code;
-    const meta = LM.extractMeta(code) || {
-      title: (TS.fields && TS.fields.title) || 'Game',
-      blurb: (TS.fields && TS.fields.blurb) || '',
-      hint: TS.hint || '',
-      palette: (TS.fields && TS.fields.palette) || ['#1B1F23', '#0a0d10']
-    };
-    return RNR.wrap(TS.lang, code, meta);
+    // the title you chose (store kit fields) wins over a stale metadata comment
+    const meta = LM.extractMeta(code) || {};
+    const f = TS.fields || {};
+    return RNR.wrap(TS.lang, code, {
+      title: f.title || meta.title || 'Game',
+      blurb: f.blurb || meta.blurb || '',
+      hint: f.hint || TS.hint || meta.hint || '',
+      palette: f.palette || meta.palette || ['#1B1F23', '#0a0d10']
+    });
   }
   TS.buildGame = buildGame;
 
@@ -331,13 +333,25 @@
   }
   TS.loadCode = loadCode;
 
+  function applyTitle(code, title) {
+    code = String(code).replace(/("title"\s*:\s*)"[^"]*"/, (mm, p1) => p1 + JSON.stringify(title));
+    if (TS.lang === 'frost') code = code.replace(/^(\s*title\s+)[^\n]*$/mi, (mm, p1) => p1 + title);
+    return code;
+  }
+
   TS.startTemplate = function (kind) {
     const t = TPL.get(TS.lang, kind === 'empty' ? 'empty' : 'starter');
+    const suggested = (kind === 'empty' ? 'My Game' : 'Starfall Catch');
+    let chosen = suggested;
+    try {
+      const ans = window.prompt('Choose the title of your game:', suggested);
+      if (ans && ans.trim()) chosen = ans.trim().slice(0, 60);
+    } catch (e) {}
     TS.fields = null; TS.cover = null; TS.shots = [];
     TS.mode = 'code';
     TS._aiUsed = false;
-    loadCode(t.code, null, TS.lang === 'js' ? (kind === 'empty' ? 'My Game' : 'Starfall Catch') : 'Starfall Catch');
-    toast('Opened “' + t.label + '” — the Code Room, no AI');
+    loadCode(applyTitle(t.code, chosen), null, chosen);
+    toast('Opened “' + chosen + '” — the Code Room, no AI');
   };
   TS.newFrom = function (id) { TS.startTemplate(id === 'empty' ? 'empty' : 'starter'); };
 

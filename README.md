@@ -39,6 +39,11 @@ The `Tundra` API for script languages is a thin arcade layer — `circle/rect/te
 hooks. The wrapper provides the title/pause/game-over screens, HUD, input, and the store
 screenshot bridge.
 
+Every build opens with a ~10-second console-style **boot screen** (a progress bar and
+“Starting ⟨your title⟩…”), then the game opens on its title screen. Space or a tap skips
+the boot early. The title you chose — via the “Choose the title” prompt on New Game,
+the store-kit Title field, the metadata comment or Frost's `title` line — is what shows.
+
 ## The rules
 
 1. **The only AI is your API key.** ⚙ Engine takes a base URL, key and model (OpenAI or any

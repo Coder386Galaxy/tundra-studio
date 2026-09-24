@@ -234,6 +234,54 @@ try {
   }
 } catch (e) { fail('frost suite error: ' + e.message); }
 
+/* ---------- 5c) boot: ~10s then the game opens; chosen title applies ---------- */
+try {
+  const wB = RNR.wrap('frost', 'title My Chosen Title\nbg #123456 #210000\nplayer p circle 20 #ffffff at 50% 50%\ncontrol p arrows speed 200\n', { title: 'Meta Title', hint: 'h', blurb: 'b', palette: ['#1', '#2'] });
+  const framesB = [], listenersB = {};
+  const stubCtxB = new Proxy({}, { get: (t, k) => (k === 'createLinearGradient' ? () => ({ addColorStop() { } }) : function () { }), set: () => true });
+  const cvB = {
+    width: 0, height: 0, getContext: () => stubCtxB,
+    addEventListener: (t, f) => { (listenersB[t] = listenersB[t] || []).push(f); },
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 450 }),
+    toDataURL: () => 'data:image/jpeg;base64,fake'
+  };
+  const statusElB = { textContent: '', className: '', style: {} };
+  const sbB = {
+    window: null,
+    document: {
+      getElementById: (id) => (id === 'status' ? statusElB : cvB),
+      addEventListener: (t, f) => { (listenersB['doc:' + t] = listenersB['doc:' + t] || []).push(f); }
+    },
+    addEventListener: (t, f) => { (listenersB[t] = listenersB[t] || []).push(f); },
+    removeEventListener: () => { },
+    localStorage: { getItem: () => '0', setItem: () => { } },
+    requestAnimationFrame: (fn) => { framesB.push(fn); },
+    parent: { postMessage: () => { } },
+    Math, JSON, Date, console, Array, Object, String, Number, RegExp, isFinite, parseInt, parseFloat
+  };
+  sbB.window = sbB;
+  const blocksB = [];
+  const reB = /<script>([\s\S]*?)<\/script>/g;
+  let mB;
+  while ((mB = reB.exec(wB))) blocksB.push(mB[1]);
+  vm.createContext(sbB);
+  vm.runInContext(blocksB[0], sbB, { filename: 'boot-build.js' });
+  const TB = sbB.window.Tundra;
+  if (!TB) fail('boot suite: no Tundra API');
+  else if (TB.state() !== 'boot') fail('expected boot state at launch, got ' + TB.state());
+  else {
+    let tB = 0;
+    for (let i = 0; i < 660; i++) { tB += 16.7; const fn = framesB.shift(); if (fn) fn(tB); }
+    if (TB.state() !== 'title') fail('title should open after ~10s boot, got ' + TB.state());
+    const kdB = (listenersB['doc:keydown'] || listenersB['keydown'] || [])[0];
+    if (kdB) {
+      kdB({ key: ' ', preventDefault() { } });
+      if (TB.state() !== 'play') fail('space should start the game from title, got ' + TB.state());
+    }
+    console.log('ok: boot 10s -> title opens -> play');
+  }
+} catch (e) { fail('boot suite error: ' + e.message); }
+
 /* ---------- 6) py/lua wrap builds boot headlessly (API + boot fns) ---------- */
 try {
   const w = RNR.wrap('py', sneaky, { title: 'T' });
