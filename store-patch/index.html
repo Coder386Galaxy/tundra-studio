@@ -283,6 +283,7 @@
   footer b{color:var(--frost-light)}
   @media(max-width:900px){.detail-top,.lib,.two,.lib-body,.form .row{grid-template-columns:1fr}.hero{height:340px}.hero h1{font-size:30px}.hero .content{left:20px;bottom:20px;right:20px}.tabs{display:none}.stats-row{grid-template-columns:repeat(2,1fr)}}
 </style>
+<style>#view-code{display:none!important}</style>
 </head>
 <body>
 
@@ -297,7 +298,7 @@
       <button class="tab" data-v="library" onclick="go('library')">Library</button>
       <button class="tab" data-v="wishlist" onclick="go('wishlist')">Wishlist</button>
       <button class="tab" data-v="community" onclick="go('community')">Community</button>
-      <button class="tab" data-v="code" onclick="go('code')">Code</button>
+      
       <button class="tab" data-v="publish" onclick="go('publish')">Publish</button>
       <button class="tab" data-v="account" onclick="go('account')">Account</button>
     </nav>
@@ -512,6 +513,7 @@ function readFile(f){return new Promise(res=>{const r=new FileReader();r.onload=
 /* ================= NAV ================= */
 let heroIdx=0,heroTimer,featured=[];
 function go(v,id){
+  if(v==='code')v='store';
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
   $('#view-'+v).classList.add('active');

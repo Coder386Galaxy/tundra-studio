@@ -69,9 +69,9 @@ s = s.replace(OLD, '')
 g = 'function go(v,id){'
 assert s.count(g) == 1, 'go() anchor'
 s = s.replace(g, g + "\n  if(v==='code')v='store';")
-h = '</head>'
-assert s.count(h) == 1, 'head anchor'
-s = s.replace(h, '<style>#view-code{display:none!important}</style>\n' + h)
+h = s.find('</head>')          # first = real document head (the 2nd lives in a JS template string)
+assert h > 0, 'head anchor'
+s = s[:h] + '<style>#view-code{display:none!important}</style>\n' + s[h:]
 
 open(os.path.join(HERE, 'index.html'), 'w', encoding='utf-8').write(s)
 print('built store-patch/index.html:', len(s), 'bytes')
