@@ -62,6 +62,17 @@ idx = s.lower().rfind('</body>')
 assert idx > 0, 'no </body>'
 s = s[:idx] + block + s[idx:]
 
+# 7) kill the in-store code editor (coding lives in Tundra Studio)
+OLD = '''<button class="tab" data-v="code" onclick="go('code')">Code</button>'''
+assert s.count(OLD) == 1, 'code tab anchor'
+s = s.replace(OLD, '')
+g = 'function go(v,id){'
+assert s.count(g) == 1, 'go() anchor'
+s = s.replace(g, g + "\n  if(v==='code')v='store';")
+h = '</head>'
+assert s.count(h) == 1, 'head anchor'
+s = s.replace(h, '<style>#view-code{display:none!important}</style>\n' + h)
+
 open(os.path.join(HERE, 'index.html'), 'w', encoding='utf-8').write(s)
 print('built store-patch/index.html:', len(s), 'bytes')
 

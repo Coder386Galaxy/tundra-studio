@@ -20,6 +20,10 @@ store + everything below):
    purchase. The demo store processes nothing real — no card is charged
    or stored.
 
+3. NO CODING HERE — the in-store Code tab/IDE is removed and its route
+   is dead. Tundra Games is buy / download / play only; games are made
+   in Tundra Studio.
+
 FILES
   index.html                 the complete store — upload this one
   tundra-checkout-addon.js   the addon source (already built in)

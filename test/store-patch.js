@@ -43,6 +43,11 @@ if (!s.includes('CVC')) fail('CVC field missing');
 if (s.includes('Tundra Pay') || s.includes('Frost Card') || s.includes('Snowbank') || s.includes('PayPuffin')) fail('fake payment brands still present');
 if (!s.includes("name: 'Visa'") || !s.includes("name: 'Mastercard'") || !s.includes("name: 'American Express'") || !s.includes("name: 'PayPal'")) fail('real payment brands missing');
 
+/* ---- 3c) no coding in Tundra Games (games are made in Tundra Studio) ---- */
+if (s.includes("go('code')\">Code")) fail('Code tab still in nav');
+if (!s.includes("if(v==='code')v='store';")) fail('go() code-route guard missing');
+if (!s.includes('#view-code{display:none')) fail('code view not hidden');
+
 /* ---- 4) HTML sanity ---- */
 // NOTE: the store embeds <script> tags inside JS template strings (game srcdoc),
 // so naive open/close balance is meaningless — require a real close after the last open.
